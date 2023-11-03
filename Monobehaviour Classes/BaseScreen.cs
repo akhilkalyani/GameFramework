@@ -25,6 +25,10 @@ namespace GF
                 OnBackKeyPressed();
             }
         }
+        protected void SwitchScreen(E screenId)
+        {
+            Utils.RaiseEventAsync(new ScreenChangeEvent<E>(screenId));
+        }
         protected virtual void OnBackKeyPressed()
         {
 

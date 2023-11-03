@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 namespace GF
 {
@@ -10,7 +11,6 @@ namespace GF
         public GameObject LoadingScreenGameObject{get{return _loadingScreenGameobject;}}
         private GameServiceController _gameServiceController;
         private AudioManager _audioManager;
-
         protected override void Awake()
         {
             dontDestroyedOnLoad = true;
@@ -18,7 +18,6 @@ namespace GF
             InitializeServices();
             base.Awake();
         }
-
         private void InitializeServices()
         {
             EventManager.Instance.Start();
@@ -26,7 +25,6 @@ namespace GF
             _gameServiceController.Initialize();
             _gameServiceController.RegisterListener();
         }
-
         public void SpawnLoadingScreen(string path)
         {
             _audioManager = AudioManager.Instance;
@@ -35,17 +33,15 @@ namespace GF
             _loadingScreenGameobject.name = $"DefaultLoadingUI";
             Utils.RaiseEventAsync(new LoadingScreenCreated(_loadingScreenGameobject.GetComponent<DefaultLoadingUI>()));
         }
-
-        public void AddNewService(IService service)
+        public void AddNewService(Type type)
         {
-            _gameServiceController.AddService(service);
+            _gameServiceController.AddService(type);
         }
 
-        public void RemoveService(IService service)
+        public void RemoveService(Type type)
         {
-            _gameServiceController.RemoveService(service);
+            _gameServiceController.RemoveService(type);
         }
-
         protected override void OnApplicationQuit()
         {
             EventManager.Instance.ReleaseEvents();

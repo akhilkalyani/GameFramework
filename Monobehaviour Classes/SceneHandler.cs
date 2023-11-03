@@ -16,7 +16,25 @@ namespace GF
         protected virtual void Awake()
         {
             ApplicationManager.Instance.SpawnLoadingScreen(LoadingScreenPath);
+            RegisterListener();
         }
+
+        private void RegisterListener()
+        {
+            EventManager.Instance.AddListener<ScreenChangeEvent<T>>(ChangeScreen);
+        }
+
+        private void ChangeScreen(ScreenChangeEvent<T> e)
+        {
+            var nextScreen = GetScreen(e.ScreenID);
+            if (nextScreen!=null)
+            {
+                nextScreen.OpenScreen();
+                currentActiveScreen.CloseScreen();
+                currentActiveScreen = nextScreen;
+            }
+        }
+
         protected virtual void Start()
         {
             if(IsScreensPrepared())
@@ -67,6 +85,14 @@ namespace GF
             {
                 return null;
             }
+        }
+        private void RemoveListener()
+        {
+            EventManager.Instance.RemoveListener<ScreenChangeEvent<T>>(ChangeScreen);
+        }
+        private void OnDestroy()
+        {
+            RemoveListener();
         }
     }
 }
