@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-
+using UnityEngine;
 namespace GF
 {
     public class GameServiceController
@@ -21,7 +21,7 @@ namespace GF
         {
             return Assembly.GetExecutingAssembly()
                 .GetTypes()
-                .Where(type => typeof(T).IsAssignableFrom(type) && !type.IsInterface);
+                .Where(type =>type.Namespace=="GF" && typeof(T).IsAssignableFrom(type) && !type.IsInterface);
         }
         public void RegisterListener()
         {
@@ -31,7 +31,19 @@ namespace GF
                 service.RegisterListener();
             }
         }
-
+        public void AddService(IService service)
+        {
+            service.Initialize();
+            service.RegisterListener();
+            services.Add(service);
+        }
+        public void RemoveService(IService service)
+        {
+            int targetIndex = services.IndexOf(service);
+            var targetService =services[targetIndex];
+            services.RemoveAt(targetIndex);
+            ((Service)targetService).Dispose();   
+        }
         public void RemoveListener()
         {
             foreach (var service in services)

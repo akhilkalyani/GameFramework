@@ -9,7 +9,7 @@ namespace GF
         Error = 1,
         HttpRequest = 2,
         HttpResponse = 3,
-        Test = 4
+        Warning = 4
     }
     public static class Console 
     {
@@ -19,7 +19,7 @@ namespace GF
                 {LogType.Log,"#FFFFFF"},// white
                 {LogType.HttpRequest,"#FFEC00"},//yellow
                 {LogType.HttpResponse,"#00FF15"},//green
-                {LogType.Test,"#00F6FF"}//cyan
+                {LogType.Warning,"#00F6FF"}//cyan
         };
         public static void Log(LogType logType, string msgBody)
         {
