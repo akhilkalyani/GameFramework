@@ -14,7 +14,21 @@ namespace GF
     }
     public class LoadingScreenCreated:GameEvent
     {
-
+        private DefaultLoadingUI _defaultLoadingUI;
+        public DefaultLoadingUI DefaultLoadingUI { get { return _defaultLoadingUI; } }
+        public LoadingScreenCreated(DefaultLoadingUI defaultLoadingUI)
+        {
+            _defaultLoadingUI = defaultLoadingUI;
+        }
+    }
+    public class SceneLoadingEvent : GameEvent
+    {
+        private SceneType _sceneType;
+        public SceneType SceneType { get { return _sceneType; } }
+        public SceneLoadingEvent(SceneType scene)
+        {
+            _sceneType = scene;
+        }
     }
     public class DownloadImageEvent : GameEvent
     {

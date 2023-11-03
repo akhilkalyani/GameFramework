@@ -16,7 +16,7 @@ namespace GF
 
         private void StartCoroutine(CoroutineEvent e)
         {
-            GameManager.Instance.StartCoroutine(e.Enumerator);
+            ApplicationManager.Instance.StartCoroutine(e.Enumerator);
         }
 
         public void RemoveListener()

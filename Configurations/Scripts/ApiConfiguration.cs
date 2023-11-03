@@ -4,8 +4,6 @@ using System.IO;
 using UnityEngine;
 namespace GF
 {
-    public enum RequestType { }
-    public enum HttpRequestType { Get,Post}
     [CreateAssetMenu(fileName = "ApiConfiguration", menuName = "ScriptableObjects/ApiConfiguration", order = 1)]
     public class ApiConfiguration : ScriptableObject
     {

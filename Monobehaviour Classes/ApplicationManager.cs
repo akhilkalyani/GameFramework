@@ -4,7 +4,7 @@ namespace GF
     /// <summary>
     /// Responsible for creating & registering all the services used in the game. 
     /// </summary>
-    public class GameManager : Singleton<GameManager>
+    public class ApplicationManager : Singleton<ApplicationManager>
     {
         private GameObject _loadingScreenGameobject;
         public GameObject LoadingScreenGameObject{get{return _loadingScreenGameobject;}}
@@ -30,6 +30,7 @@ namespace GF
             if (string.IsNullOrEmpty(path)) return; 
             _loadingScreenGameobject = Instantiate(Resources.Load<GameObject>(path),transform);
             _loadingScreenGameobject.name = $"DefaultLoadingUI";
+            Utils.RaiseEventAsync(new LoadingScreenCreated(_loadingScreenGameobject.GetComponent<DefaultLoadingUI>()));
         }
         protected override void OnApplicationQuit()
         {

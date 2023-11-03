@@ -15,7 +15,7 @@ namespace GF
         protected BaseScreen<T> currentActiveScreen;
         protected virtual void Awake()
         {
-            GameManager.Instance.SpawnLoadingScreen(LoadingScreenPath);
+            ApplicationManager.Instance.SpawnLoadingScreen(LoadingScreenPath);
         }
         protected virtual void Start()
         {
