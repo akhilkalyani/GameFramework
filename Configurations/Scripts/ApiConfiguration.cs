@@ -9,7 +9,6 @@ namespace GF
     [CreateAssetMenu(fileName = "ApiConfiguration", menuName = "ScriptableObjects/ApiConfiguration", order = 1)]
     public class ApiConfiguration : ScriptableObject
     {
-        private int currentListCount = 0;
         [Serializable]
         public class Api
         {

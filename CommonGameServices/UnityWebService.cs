@@ -51,10 +51,21 @@ namespace GF
         
         private void OnApiRequest(RaiseWebApiEvent e)
         {
-            HTTPPost(apiConfiguration.GetApiUrl(e.ApiRequest.requestType),
-                e.ApiRequest.requestType.ToString(),
-                JsonConvert.SerializeObject(e.ApiRequest),
-                e._responseCallback);
+            switch(e.HttpRequestType)
+            {
+                case HttpRequestType.Post:
+                    HTTPPost(apiConfiguration.GetApiUrl(e.ApiRequest.requestType),
+                        e.ApiRequest.requestType.ToString(),
+                        JsonConvert.SerializeObject(e.ApiRequest),
+                        e._responseCallback);
+                    break;
+                case HttpRequestType.Get:
+                    HTTPGet(apiConfiguration.GetApiUrl(e.ApiRequest.requestType),
+                        e.ApiRequest.requestType.ToString(),
+                        e._responseCallback);
+                    break;
+            }
+            
         }
 
         public void RemoveListener()
@@ -178,13 +189,13 @@ namespace GF
         /// <param name="OnPostCompleteCalback"></param>
         /// <param name="OnProgressCallback"></param>
         
-        protected void HTTPPost(string url, string requestType, string data, Action<string, WebApiResponse, string> OnPostCompleteCalback)
+        protected void HTTPPost(string url, string requestType, string data, Action<string, string, string> OnPostCompleteCalback)
         {
             Utils.RaiseEventAsync(new CoroutineEvent(PostRequest(url, requestType, data, OnPostCompleteCalback)));
         }
 
         
-        private IEnumerator PostRequest(string url, string requestType, string data, Action<string, WebApiResponse, string> onPostCompleteCalback)
+        private IEnumerator PostRequest(string url, string requestType, string data, Action<string, string, string> onPostCompleteCalback)
         {
             using (var request = UnityWebRequest.PostWwwForm(url, data))
             {
@@ -200,15 +211,7 @@ namespace GF
                     Debug.Log("Success " + request.downloadHandler.text);
                     if (onPostCompleteCalback != null)
                     {
-                        WebApiResponse response = null;
-                        try
-                        {
-                            response = JsonConvert.DeserializeObject<WebApiResponse>(request.isDone ? request.downloadHandler.text : null);
-                        }
-                        catch (Exception e) {
-                            Console.Log(LogType.Error, e.StackTrace);
-                        }
-                        onPostCompleteCalback(requestType,response, request.error);
+                        onPostCompleteCalback(requestType, (request.isDone ? request.downloadHandler.text : null), request.error);
                     }
                 }
             }
@@ -222,19 +225,17 @@ namespace GF
         /// <param name="requestType"></param>
         /// <param name="OnGetCompleteCallback"></param>
         /// <param name="progressCallback"></param>
-        protected void HTTPGet(string url, string requestType, Action<string, string, string> OnGetCompleteCallback, Action<float> progressCallback)
+        protected void HTTPGet(string url, string requestType, Action<string, string, string> OnGetCompleteCallback)
         {
-            Utils.RaiseEventAsync(new CoroutineEvent(GetRequest(url, requestType, OnGetCompleteCallback, progressCallback)));
+            Utils.RaiseEventAsync(new CoroutineEvent(GetRequest(url, requestType, OnGetCompleteCallback)));
         }
 
-        private IEnumerator GetRequest(string url, string requestType, Action<string, string, string> onGetCompleteCallback, Action<float> progressCallback)
+        private IEnumerator GetRequest(string url, string requestType, Action<string, string, string> onGetCompleteCallback)
         {
             using (UnityWebRequest webRequest = UnityWebRequest.Get(url))
             {
                 yield return webRequest.SendWebRequest();
 
-                if (progressCallback != null)
-                    progressCallback(webRequest.downloadProgress);
                 if (webRequest.result == UnityWebRequest.Result.Success)
                 {
                     if (onGetCompleteCallback != null)

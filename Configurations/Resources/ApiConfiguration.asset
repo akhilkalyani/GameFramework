@@ -12,5 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 330e07061eab7454783a95a1601cd9b6, type: 3}
   m_Name: ApiConfiguration
   m_EditorClassIdentifier: 
-  BaseUrl: 
-  apis: []
+  BaseUrl: file:///Users/deepakkalyani/Library/Application Support/Juego/Offline
+    Saving System/api.json
+  apis:
+  - requestType: 0
+    api: 

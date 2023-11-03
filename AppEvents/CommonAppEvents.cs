@@ -52,8 +52,8 @@ namespace GF
         private WebApiRequest _apiRequest;
         public WebApiRequest ApiRequest { get { return _apiRequest; } }
         public HttpRequestType HttpRequestType { get { return _httpRequestType; } }
-        public Action<string, WebApiResponse, string> _responseCallback;
-        public RaiseWebApiEvent(HttpRequestType httpRequestType,WebApiRequest apiRequest, Action<string, WebApiResponse, string> responseCallback)
+        public Action<string, string, string> _responseCallback;
+        public RaiseWebApiEvent(HttpRequestType httpRequestType,WebApiRequest apiRequest, Action<string, string, string> responseCallback)
         {
             _apiRequest = apiRequest;
             _responseCallback = responseCallback;
@@ -65,6 +65,4 @@ namespace GF
     {
         public RequestType requestType;
     }
-    [System.Serializable]
-    public class WebApiResponse{}
 }
