@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 namespace GF
 {
-    public class SceneHandler<T> : MonoBehaviour where T:Enum
+    public abstract class SceneHandler<T> : MonoBehaviour where T:Enum
     {
         [Header("UI canvas prefab")]
         public string UIprefabPath;
@@ -16,7 +16,6 @@ namespace GF
         protected virtual void Awake()
         {
             ApplicationManager.Instance.SpawnLoadingScreen(LoadingScreenPath);
-            RegisterListener();
         }
 
         private void RegisterListener()
@@ -37,7 +36,8 @@ namespace GF
 
         protected virtual void Start()
         {
-            if(IsScreensPrepared())
+            RegisterListener();
+            if (IsScreensPrepared())
             {
                 ApplyHighlighter(Utils.GetColorByHashString("#E20D6B"), Color.white," GUI");
                 var screens = GUI.GetComponentsInChildren<BaseScreen<T>>(true);
@@ -94,5 +94,6 @@ namespace GF
         {
             RemoveListener();
         }
+        protected abstract void RegisterServices();
     }
 }

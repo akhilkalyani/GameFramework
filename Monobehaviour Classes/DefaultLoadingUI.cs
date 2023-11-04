@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,17 +8,16 @@ public abstract class DefaultLoadingUI : MonoBehaviour
 {
     [SerializeField] protected GameObject safeArea;
     [SerializeField] protected Animator _loadState;
-    [SerializeField] protected Animator _idleState;
+    [SerializeField] protected GameObject _idleState;
     [SerializeField] protected Animator _unloadState;
-    [SerializeField] private Image _progressbar;
-
-
+    [SerializeField] protected Image _progressbar;
+    protected Coroutine loadRoutine = null;
+    protected Coroutine unloadRoutine = null;
+    protected float _minimumWaitDuration = 1f;
     public void UpdateProgress(float progress)
     {
         _progressbar.fillAmount = progress;
     }
-
-    public abstract IEnumerator ShowLoadingScreenCoroutine();
-
-    public abstract IEnumerator CloseLoadingScreenCoroutine();
+    public abstract void Load(Action onComplete);
+    public abstract void Unload(Action onComplete);
 }

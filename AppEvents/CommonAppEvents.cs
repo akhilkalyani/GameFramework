@@ -10,7 +10,12 @@ namespace GF
     }
     public class LoadingEvent : GameEvent
     {
-
+        private Action _oncomplete;
+        public Action OnComplete { get { return _oncomplete; } }
+        public LoadingEvent(Action action)
+        {
+            _oncomplete = action;
+        }
     }
     public class ScreenChangeEvent<T> : GameEvent
     {
@@ -32,9 +37,9 @@ namespace GF
     }
     public class SceneLoadingEvent : GameEvent
     {
-        private SceneType _sceneType;
-        public SceneType SceneType { get { return _sceneType; } }
-        public SceneLoadingEvent(SceneType scene)
+        private int _sceneType;
+        public int SceneType { get { return _sceneType; } }
+        public SceneLoadingEvent(int scene)
         {
             _sceneType = scene;
         }

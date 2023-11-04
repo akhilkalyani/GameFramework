@@ -29,12 +29,14 @@ namespace GF {
 
         private void LoadScene(SceneLoadingEvent e)
         {
-            Utils.RaiseEventAsync(new CoroutineEvent(LoadSceneAsync((int)e.SceneType)));
+            _defaultLoadingUI.Load(() =>
+            {
+                Utils.RaiseEventAsync(new CoroutineEvent(LoadSceneAsync(e.SceneType)));
+            });
         }
 
         private IEnumerator LoadSceneAsync(int sceneIndex)
         {
-            yield return _defaultLoadingUI.ShowLoadingScreenCoroutine();
             AsyncOperation sceneOperation = SceneManager.LoadSceneAsync(sceneIndex);
             while (!sceneOperation.isDone)
             {
@@ -46,12 +48,12 @@ namespace GF {
 
         private void OpenLoadingScreen(LoadingEvent e)
         {
-            Utils.RaiseEventAsync(new CoroutineEvent(_defaultLoadingUI.ShowLoadingScreenCoroutine()));
+            _defaultLoadingUI.Load(e.OnComplete);
         }
 
         private void CloseLoadingScreen(UnloadingEvent e)
         {
-            Utils.RaiseEventAsync(new CoroutineEvent(_defaultLoadingUI.CloseLoadingScreenCoroutine()));
+            _defaultLoadingUI.Unload(null);
         }
 
         public void RemoveListener()

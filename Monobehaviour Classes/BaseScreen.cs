@@ -5,7 +5,6 @@ namespace GF
     public class BaseScreen<E> : MonoBehaviour where E: Enum
     {
         public E Screen;
-        private CanvasGroup _canvasGroup;
         protected virtual void OnEnable()
         {
             //EventManager.Instance.RemoveListener<UnLoadingCompletedEvent>(DoInitialLoading);
