@@ -88,12 +88,14 @@ namespace GF
         }
         private void RemoveListener()
         {
+            RemoveServices();
             EventManager.Instance.RemoveListener<ScreenChangeEvent<T>>(ChangeScreen);
         }
-        private void OnDestroy()
+        private void OnDisable()
         {
             RemoveListener();
         }
         protected abstract void RegisterServices();
+        protected abstract void RemoveServices();
     }
 }

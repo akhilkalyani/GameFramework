@@ -33,14 +33,13 @@ namespace GF
             _loadingScreenGameobject.name = $"DefaultLoadingUI";
             Utils.RaiseEventAsync(new LoadingScreenCreated(_loadingScreenGameobject.GetComponent<DefaultLoadingUI>()));
         }
-        public void AddNewService(Type type)
+        public void AddService<T>()
         {
-            _gameServiceController.AddService(type);
+            Utils.RaiseEventAsync(new AddServiceEvent(typeof(T)));
         }
-
-        public void RemoveService(Type type)
+        public void RemoveService<T>()
         {
-            _gameServiceController.RemoveService(type);
+            Utils.RaiseEventAsync(new RemoveServiceEvent(typeof(T)));
         }
         protected override void OnApplicationQuit()
         {
