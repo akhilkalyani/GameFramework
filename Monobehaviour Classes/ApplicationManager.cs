@@ -13,7 +13,7 @@ namespace GF
         private AudioManager _audioManager;
         protected override void Awake()
         {
-            dontDestroyedOnLoad = true;
+            DontDestroyWhenLoad = true;
             ApplyHighlighter(Utils.GetColorByHashString("#8819CE"), Color.white);
             InitializeServices();
             base.Awake();

@@ -7,7 +7,7 @@ public class Service : IDisposable,IService
 
     public virtual void Initialize()
     {
-
+        
     }
 
     public virtual void RegisterListener()

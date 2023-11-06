@@ -9,8 +9,8 @@ namespace GF
     {
         private Dictionary<AudioType, AudioSource> audioSourceDictionary;
         protected override void Awake()
-        {
-            dontDestroyedOnLoad = true;
+        {   
+            DontDestroyWhenLoad = true;
             ApplyHighlighter(Utils.GetColorByHashString("#00960C"), Color.white);
             audioSourceDictionary = new Dictionary<AudioType, AudioSource>()
             {

@@ -29,10 +29,7 @@ namespace GF {
 
         private void LoadScene(SceneLoadingEvent e)
         {
-            _defaultLoadingUI.Load(() =>
-            {
-                Utils.RaiseEventAsync(new CoroutineEvent(LoadSceneAsync(e.SceneType)));
-            });
+            Utils.RaiseEventAsync(new CoroutineEvent(LoadSceneAsync(e.SceneType)));   
         }
 
         private IEnumerator LoadSceneAsync(int sceneIndex)
