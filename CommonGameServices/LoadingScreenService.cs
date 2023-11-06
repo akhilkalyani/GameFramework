@@ -50,7 +50,7 @@ namespace GF {
 
         private void CloseLoadingScreen(UnloadingEvent e)
         {
-            _defaultLoadingUI.Unload(null);
+            _defaultLoadingUI.Unload(e.OnComplete);
         }
 
         public void RemoveListener()

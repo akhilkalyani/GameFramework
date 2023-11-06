@@ -22,7 +22,6 @@ namespace GF
         {
             EventManager.Instance.AddListener<ScreenChangeEvent<T>>(ChangeScreen);
         }
-
         private void ChangeScreen(ScreenChangeEvent<T> e)
         {
             var nextScreen = GetScreen(e.ScreenID);
@@ -88,7 +87,6 @@ namespace GF
         }
         private void RemoveListener()
         {
-            RemoveServices();
             EventManager.Instance.RemoveListener<ScreenChangeEvent<T>>(ChangeScreen);
         }
         private void OnDisable()
@@ -96,6 +94,5 @@ namespace GF
             RemoveListener();
         }
         protected abstract void RegisterServices();
-        protected abstract void RemoveServices();
     }
 }

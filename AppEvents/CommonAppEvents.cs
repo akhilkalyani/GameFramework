@@ -6,7 +6,12 @@ namespace GF
 {
     public class UnloadingEvent:GameEvent
     {
-
+        private Action _oncomplete;
+        public Action OnComplete { get { return _oncomplete; } }
+        public UnloadingEvent(Action action)
+        {
+            _oncomplete = action;
+        }
     }
     public class LoadingEvent : GameEvent
     {

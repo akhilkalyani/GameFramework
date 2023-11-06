@@ -22,6 +22,7 @@ public class Service : IDisposable,IService
             if (disposing)
             {
                 // TODO: dispose managed state (managed objects)
+                RemoveListener();
             }
 
             // TODO: free unmanaged resources (unmanaged objects) and override finalizer

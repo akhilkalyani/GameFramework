@@ -19,7 +19,7 @@ namespace GF
             base.Awake();
         }
         private void InitializeServices()
-        {
+        {            
             EventManager.Instance.Start();
             _gameServiceController = new GameServiceController();
             _gameServiceController.Initialize();
@@ -43,8 +43,8 @@ namespace GF
         }
         protected override void OnApplicationQuit()
         {
-            EventManager.Instance.ReleaseEvents();
             _gameServiceController.RemoveListener();
+            EventManager.Instance.ReleaseEvents();
             base.OnApplicationQuit();
         }
     }

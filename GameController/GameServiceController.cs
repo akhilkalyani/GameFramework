@@ -52,10 +52,17 @@ namespace GF
         {
             foreach (var service in services.Values)
             {
-                service.RemoveListener();
+                if (service.GetType() == typeof(Service))
+                {
+                    ((Service)service).Dispose();
+                }
+                else
+                {
+                    service.RemoveListener();
+                }
             }
-            EventManager.Instance.AddListener<AddServiceEvent>(AddService);
-            EventManager.Instance.AddListener<RemoveServiceEvent>(RemoveService);
+            EventManager.Instance.RemoveListener<AddServiceEvent>(AddService);
+            EventManager.Instance.RemoveListener<RemoveServiceEvent>(RemoveService);
         }
     }
 }
