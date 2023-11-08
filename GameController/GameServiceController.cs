@@ -31,7 +31,6 @@ namespace GF
                 service.RegisterListener();
             }
             EventManager.Instance.AddListener<AddServiceEvent>(AddService);
-            EventManager.Instance.AddListener<RemoveServiceEvent>(RemoveService);
         }
         public void AddService(AddServiceEvent serviceEvent)
         {
@@ -39,14 +38,6 @@ namespace GF
             service.Initialize();
             service.RegisterListener();
             services.Add(serviceEvent.ServiceType, service);
-        }
-        public void RemoveService(RemoveServiceEvent serviceEvent)
-        {
-            if(services.TryGetValue(serviceEvent.ServiceType,out IService service))
-            {
-                services.Remove(serviceEvent.ServiceType);
-                ((Service)service).Dispose();
-            }
         }
         public void RemoveListener()
         {
@@ -61,8 +52,8 @@ namespace GF
                     service.RemoveListener();
                 }
             }
+            services.Clear();
             EventManager.Instance.RemoveListener<AddServiceEvent>(AddService);
-            EventManager.Instance.RemoveListener<RemoveServiceEvent>(RemoveService);
         }
     }
 }

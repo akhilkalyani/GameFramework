@@ -95,7 +95,7 @@ namespace GF
                 url = "file://" + Path.Combine(cashedImageUrl, str[str.Length - 1]);
                 hascahed = true;
             }
-            Utils.RaiseEventAsync(new CoroutineEvent(DownloadImageRoutine(url, hascahed, image)));
+            Utils.CallEventAsync(new CoroutineEvent(DownloadImageRoutine(url, hascahed, image)));
         }
 
         private IEnumerator DownloadImageRoutine(string url, bool islocal, Action<Texture2D> image)
@@ -158,7 +158,7 @@ namespace GF
         /// <param name="OnProgressCallback"></param>
         protected void DownloadFile(string url, string requestType, string data, Action<string, byte[], string> OnDownloadCompleteCallback, Action<float, string> OnProgressCallback)
         {
-            Utils.RaiseEventAsync(new CoroutineEvent(DownloadFileRequest(url, requestType, data, OnDownloadCompleteCallback, OnProgressCallback)));
+            Utils.CallEventAsync(new CoroutineEvent(DownloadFileRequest(url, requestType, data, OnDownloadCompleteCallback, OnProgressCallback)));
         }
 
         private IEnumerator DownloadFileRequest(string url, string requestType, string data, Action<string, byte[], string> onDownloadCompleteCallback, Action<float, string> onProgressCallback)
@@ -191,7 +191,7 @@ namespace GF
         
         protected void HTTPPost(string url, string requestType, string data, Action<string, string, string> OnPostCompleteCalback)
         {
-            Utils.RaiseEventAsync(new CoroutineEvent(PostRequest(url, requestType, data, OnPostCompleteCalback)));
+            Utils.CallEventAsync(new CoroutineEvent(PostRequest(url, requestType, data, OnPostCompleteCalback)));
         }
 
         
@@ -227,7 +227,7 @@ namespace GF
         /// <param name="progressCallback"></param>
         protected void HTTPGet(string url, string requestType, Action<string, string, string> OnGetCompleteCallback)
         {
-            Utils.RaiseEventAsync(new CoroutineEvent(GetRequest(url, requestType, OnGetCompleteCallback)));
+            Utils.CallEventAsync(new CoroutineEvent(GetRequest(url, requestType, OnGetCompleteCallback)));
         }
 
         private IEnumerator GetRequest(string url, string requestType, Action<string, string, string> onGetCompleteCallback)

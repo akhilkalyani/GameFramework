@@ -31,15 +31,6 @@ namespace GF
             _serviceType = serviceType;
         }
     }
-    public class RemoveServiceEvent : GameEvent
-    {
-        private Type _serviceType;
-        public Type ServiceType { get { return _serviceType; } }
-        public RemoveServiceEvent(Type serviceType)
-        {
-            _serviceType = serviceType;
-        }
-    }
     public class ScreenChangeEvent<T> : GameEvent
     {
         private T _screenId;

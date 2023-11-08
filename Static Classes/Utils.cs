@@ -11,11 +11,11 @@ namespace GF
     /// </summary>
     public static class Utils
     {
-        public static void RaiseEventAsync(GameEvent gameEvent)
+        public static void CallEventAsync(GameEvent gameEvent)
         {
             EventManager.Instance.TriggerEvent(gameEvent);
         }
-        public static void RaiseEventSync(GameEvent gameEvent)
+        public static void CallEventSync(GameEvent gameEvent)
         {
             EventManager.Instance.QueueEvent(gameEvent);
         }
