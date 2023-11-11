@@ -31,15 +31,11 @@ namespace GF
             if (string.IsNullOrEmpty(path)) return; 
             _loadingScreenGameobject = Instantiate(Resources.Load<GameObject>(path),transform);
             _loadingScreenGameobject.name = $"DefaultLoadingUI";
-            Utils.RaiseEventAsync(new LoadingScreenCreated(_loadingScreenGameobject.GetComponent<DefaultLoadingUI>()));
+            Utils.CallEventAsync(new LoadingScreenCreated(_loadingScreenGameobject.GetComponent<DefaultLoadingUI>()));
         }
         public void AddService<T>()
         {
-            Utils.RaiseEventAsync(new AddServiceEvent(typeof(T)));
-        }
-        public void RemoveService<T>()
-        {
-            Utils.RaiseEventAsync(new RemoveServiceEvent(typeof(T)));
+            Utils.CallEventAsync(new AddServiceEvent(typeof(T)));
         }
         protected override void OnApplicationQuit()
         {

@@ -17,7 +17,7 @@ namespace GF
         {
             gameObject.SetActive(false);
         }
-        private void Update()
+        protected virtual void Update()
         {
             if (Input.GetKeyDown(KeyCode.Escape))
             {
@@ -26,7 +26,7 @@ namespace GF
         }
         protected void SwitchScreen(E screenId)
         {
-            Utils.RaiseEventAsync(new ScreenChangeEvent<E>(screenId));
+            Utils.CallEventAsync(new ScreenChangeEvent<E>(screenId));
         }
         protected virtual void OnBackKeyPressed()
         {

@@ -17,22 +17,6 @@ namespace GF
         {
             ApplicationManager.Instance.SpawnLoadingScreen(LoadingScreenPath);
         }
-
-        private void RegisterListener()
-        {
-            EventManager.Instance.AddListener<ScreenChangeEvent<T>>(ChangeScreen);
-        }
-        private void ChangeScreen(ScreenChangeEvent<T> e)
-        {
-            var nextScreen = GetScreen(e.ScreenID);
-            if (nextScreen!=null)
-            {
-                nextScreen.OpenScreen();
-                currentActiveScreen.CloseScreen();
-                currentActiveScreen = nextScreen;
-            }
-        }
-
         protected virtual void Start()
         {
             RegisterListener();
@@ -47,6 +31,21 @@ namespace GF
                 }
                 currentActiveScreen = GetScreen(StartScreen);
                 currentActiveScreen.OpenScreen();
+            }
+            RegisterServices();
+        }
+        private void RegisterListener()
+        {
+            EventManager.Instance.AddListener<ScreenChangeEvent<T>>(ChangeScreen);
+        }
+        private void ChangeScreen(ScreenChangeEvent<T> e)
+        {
+            var nextScreen = GetScreen(e.ScreenID);
+            if (nextScreen != null)
+            {
+                nextScreen.OpenScreen();
+                currentActiveScreen.CloseScreen();
+                currentActiveScreen = nextScreen;
             }
         }
         private bool IsScreensPrepared()
@@ -68,7 +67,7 @@ namespace GF
         }
         protected void ApplyHighlighter(Color bg, Color text, string name)
         {
-            GUI.name = name;
+            GUI.name =$"{GUI.name}-->{name}";
             HierarchyHighlighter hr = GUI.GetComponent<HierarchyHighlighter>();
             hr.Background_Color = bg;
             hr.Text_Color = text;
