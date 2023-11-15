@@ -14,7 +14,7 @@ namespace GF
         /// <summary>
         /// Specify whether singleton persistant across all scenes.
         /// </summary>
-        protected bool DontDestroyWhenLoad;
+        public bool DontDestroyWhenLoad;
         #endregion
 
         #region  Properties

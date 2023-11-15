@@ -197,7 +197,7 @@ namespace GF
         
         private IEnumerator PostRequest(string url, string requestType, string data, Action<string, string, string> onPostCompleteCalback)
         {
-            using (var request = UnityWebRequest.PostWwwForm(url, data))
+            using (var request = UnityWebRequest.Post(url, data))
             {
                 request.SetRequestHeader("Content-Type", "application/json");
                 request.SetRequestHeader("Authorization", "Bearer " + BearerToken);

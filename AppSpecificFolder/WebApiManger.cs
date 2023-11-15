@@ -1,7 +1,6 @@
 using System;
 using Newtonsoft.Json;
 using UnityEngine;
-
 namespace GF
 {
     public static class WebApiManger

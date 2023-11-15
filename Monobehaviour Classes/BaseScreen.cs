@@ -17,7 +17,7 @@ namespace GF
         {
             gameObject.SetActive(false);
         }
-        private void Update()
+        protected virtual void Update()
         {
             if (Input.GetKeyDown(KeyCode.Escape))
             {
