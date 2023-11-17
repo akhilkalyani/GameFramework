@@ -7,8 +7,6 @@ namespace GF
     /// </summary>
     public class ApplicationManager : Singleton<ApplicationManager>
     {
-        private GameObject _loadingScreenGameobject;
-        public GameObject LoadingScreenGameObject{get{return _loadingScreenGameobject;}}
         private GameServiceController _gameServiceController;
         private AudioManager _audioManager;
         protected override void Awake()
@@ -25,13 +23,17 @@ namespace GF
             _gameServiceController.Initialize();
             _gameServiceController.RegisterListener();
         }
-        public void SpawnLoadingScreen(string path)
+        public void SpawnLoadingAndToastScreen(string loadingScreenpath,string toastScreenPath)
         {
             _audioManager = AudioManager.Instance;
-            if (string.IsNullOrEmpty(path)) return; 
-            _loadingScreenGameobject = Instantiate(Resources.Load<GameObject>(path),transform);
+            if (string.IsNullOrEmpty(loadingScreenpath)) return; 
+            var _loadingScreenGameobject = Instantiate(Resources.Load<DefaultLoadingUI>(loadingScreenpath),transform);
             _loadingScreenGameobject.name = $"DefaultLoadingUI";
-            Utils.CallEventAsync(new LoadingScreenCreated(_loadingScreenGameobject.GetComponent<DefaultLoadingUI>()));
+            Utils.CallEventAsync(new LoadingScreenCreated(_loadingScreenGameobject));
+            if(string.IsNullOrEmpty(toastScreenPath)) return;
+            var toastScreen = Instantiate(Resources.Load<ToastMessgeUI>(toastScreenPath),transform);
+            toastScreen.name = $"DefaultToastUI";
+            Utils.CallEventAsync(new ToastScreenCreated(toastScreen));
         }
         public void AddService<T>()
         {

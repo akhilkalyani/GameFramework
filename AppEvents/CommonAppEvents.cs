@@ -4,6 +4,18 @@ using UnityEngine;
 
 namespace GF
 {
+    public class ToastEvent : GameEvent
+    {
+        private string _message;
+        public string Message { get { return _message; } }
+        private float _duration;
+        public float Duration { get { return _duration; } }
+        public ToastEvent(string message,float duration)
+        {
+            _message = message;
+            _duration = duration;
+        }
+    }
     public class UnloadingEvent:GameEvent
     {
         private Action _oncomplete;
@@ -47,6 +59,15 @@ namespace GF
         public LoadingScreenCreated(DefaultLoadingUI defaultLoadingUI)
         {
             _defaultLoadingUI = defaultLoadingUI;
+        }
+    }
+    public class ToastScreenCreated : GameEvent
+    {
+        private ToastMessgeUI _toastMessgeUI;
+        public ToastMessgeUI ToastMessgeUI { get { return _toastMessgeUI; } }
+        public ToastScreenCreated(ToastMessgeUI toastMessgeUI)
+        {
+            _toastMessgeUI = toastMessgeUI;
         }
     }
     public class SceneLoadingEvent : GameEvent

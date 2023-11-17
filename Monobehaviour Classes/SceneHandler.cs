@@ -9,13 +9,15 @@ namespace GF
         public string UIprefabPath;
         [Header("LoadingScreen prefab path")]
         public string LoadingScreenPath;
+        [Header("ToastScreen prefab path")]
+        public string ToastScreenPath;
         protected GameObject GUI = null;
         private readonly Dictionary<T, BaseScreen<T>> _screensDictionary = new Dictionary<T, BaseScreen<T>>();
         public T StartScreen;
         protected BaseScreen<T> currentActiveScreen;
         protected virtual void Awake()
         {
-            ApplicationManager.Instance.SpawnLoadingScreen(LoadingScreenPath);
+            ApplicationManager.Instance.SpawnLoadingAndToastScreen(LoadingScreenPath,ToastScreenPath);
         }
         protected virtual void Start()
         {
