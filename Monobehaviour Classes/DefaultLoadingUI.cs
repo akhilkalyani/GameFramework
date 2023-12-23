@@ -3,10 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-
+namespace GF{
 public abstract class DefaultLoadingUI : MonoBehaviour
 {
-    [SerializeField] protected GameObject safeArea;
+    [SerializeField] protected GameObject loadingParent;
     [SerializeField] protected Animator _loadState;
     [SerializeField] protected GameObject _idleState;
     [SerializeField] protected Animator _unloadState;
@@ -20,4 +20,5 @@ public abstract class DefaultLoadingUI : MonoBehaviour
     }
     public abstract void Load(Action onComplete);
     public abstract void Unload(Action onComplete);
+}
 }

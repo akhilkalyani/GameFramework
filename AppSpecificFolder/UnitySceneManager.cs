@@ -7,7 +7,7 @@ namespace GF
     {
         public static void ChangeScene(int scene)
         {
-            Utils.CallEventAsync(new LoadingEvent(()=>Utils.CallEventAsync(new SceneLoadingEvent(scene))));
+            Utils.CallEventAsync(new SceneLoadingEvent(scene));
         }
         public static void ShowLoadingScreen(Action complete)
         {
