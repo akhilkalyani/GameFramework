@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using Netconfig;
 using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -25,7 +26,6 @@ namespace GF
         private Queue<Request> imageRequestQueue = new Queue<Request>();
         private string BearerToken;
         private string BearerTokenKey = "BearerToken";
-        private ApiConfiguration apiConfiguration;
         public void Initialize()
         {
             Console.Log(LogType.Log, "UnityWebService created");
@@ -38,7 +38,6 @@ namespace GF
             {
                 Directory.CreateDirectory(cashedImageUrl);
             }
-            apiConfiguration = Resources.Load<ApiConfiguration>("ApiConfiguration");
         }
 
         
@@ -51,21 +50,21 @@ namespace GF
         
         private void OnApiRequest(RaiseWebApiEvent e)
         {
-            switch(e.HttpRequestType)
+            switch (e.HttpRequestType)
             {
                 case HttpRequestType.Post:
-                    HTTPPost(apiConfiguration.GetApiUrl(e.ApiRequest.requestType),
+                    HTTPPost(ServerConfig.Instance.GetApiUrl(e.ApiRequest.requestType),
                         e.ApiRequest.requestType.ToString(),
                         JsonConvert.SerializeObject(e.ApiRequest),
                         e._responseCallback);
                     break;
                 case HttpRequestType.Get:
-                    HTTPGet(apiConfiguration.GetApiUrl(e.ApiRequest.requestType),
+                    HTTPGet(ServerConfig.Instance.GetApiUrl(e.ApiRequest.requestType),
                         e.ApiRequest.requestType.ToString(),
                         e._responseCallback);
                     break;
             }
-            
+
         }
 
         public void RemoveListener()
@@ -197,7 +196,7 @@ namespace GF
         
         private IEnumerator PostRequest(string url, string requestType, string data, Action<string, string, string> onPostCompleteCalback)
         {
-            using (var request = UnityWebRequest.Post(url, data))
+            using (var request = UnityWebRequest.PostWwwForm(url, data))
             {
                 request.SetRequestHeader("Content-Type", "application/json");
                 request.SetRequestHeader("Authorization", "Bearer " + BearerToken);
