@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-
+namespace GF{
 public abstract class DefaultLoadingUI : MonoBehaviour
 {
     [SerializeField] protected GameObject loadingParent;
@@ -16,9 +16,9 @@ public abstract class DefaultLoadingUI : MonoBehaviour
     protected float _minimumWaitDuration = 1f;
     public void UpdateProgress(float progress)
     {
-        if (_progressbar == null) return;
         _progressbar.fillAmount = progress;
     }
     public abstract void Load(Action onComplete);
     public abstract void Unload(Action onComplete);
+}
 }

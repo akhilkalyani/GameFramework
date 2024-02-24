@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using UnityEngine;
 namespace GF
 {
     public class GameServiceController
@@ -37,13 +38,6 @@ namespace GF
             service.Initialize();
             service.RegisterListener();
             services.Add(serviceEvent.ServiceType, service);
-        }
-        public void Update()
-        {
-            foreach (var service in services.Values.Where(s=>s.IsUpdateRequired==true))
-            {
-                service.Update();
-            }
         }
         public void RemoveListener()
         {

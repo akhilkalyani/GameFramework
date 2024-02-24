@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 namespace GF
 {
-    public abstract class BaseScreen<E> : MonoBehaviour where E: Enum
+    public class BaseScreen<E> : MonoBehaviour where E: Enum
     {
         public E Screen;
         protected virtual void OnEnable()
@@ -26,9 +26,12 @@ namespace GF
         }
         protected void SwitchScreen(E screenId)
         {
-            SceneHandler<E>.Instance.ChangeScreen(screenId);
+            Utils.CallEventAsync(new ScreenChangeEvent<E>(screenId));
         }
-        protected abstract void OnBackKeyPressed();
+        protected virtual void OnBackKeyPressed()
+        {
+
+        }
         protected virtual void OnDisable()
         {
             //EventManager.Instance.RemoveListener<UnLoadingCompletedEvent>(DoInitialLoading);

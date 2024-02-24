@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 namespace GF
 {
@@ -37,10 +38,6 @@ namespace GF
         public void AddService<T>()
         {
             Utils.CallEventAsync(new AddServiceEvent(typeof(T)));
-        }
-        private void Update()
-        {
-            _gameServiceController.Update();
         }
         protected override void OnApplicationQuit()
         {

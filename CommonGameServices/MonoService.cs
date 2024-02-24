@@ -4,9 +4,6 @@ namespace GF
 {
     public class MonoService : IService
     {
-        private bool isUpdateRequired = false;
-        public bool IsUpdateRequired => isUpdateRequired;
-
         public void Initialize()
         {
             Console.Log(LogType.Log, "MonoService created");
@@ -25,11 +22,6 @@ namespace GF
         public void RemoveListener()
         {
             EventManager.Instance.RemoveListener<CoroutineEvent>(StartCoroutine);
-        }
-
-        public void Update()
-        {
-            
         }
     }
 }
