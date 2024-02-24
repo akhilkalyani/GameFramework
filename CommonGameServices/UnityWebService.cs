@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using Netconfig;
 using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -11,6 +10,7 @@ namespace GF
 {
     public class UnityWebService : IService
     {
+        private bool isUpdateRequired = false;
         public class Request
         {
             public int RequestID;
@@ -26,6 +26,10 @@ namespace GF
         private Queue<Request> imageRequestQueue = new Queue<Request>();
         private string BearerToken;
         private string BearerTokenKey = "BearerToken";
+        private ApiConfiguration apiConfiguration;
+
+        public bool IsUpdateRequired => isUpdateRequired;
+
         public void Initialize()
         {
             Console.Log(LogType.Log, "UnityWebService created");
@@ -38,6 +42,7 @@ namespace GF
             {
                 Directory.CreateDirectory(cashedImageUrl);
             }
+            apiConfiguration = Resources.Load<ApiConfiguration>("ApiConfiguration");
         }
 
         
@@ -50,21 +55,21 @@ namespace GF
         
         private void OnApiRequest(RaiseWebApiEvent e)
         {
-            switch (e.HttpRequestType)
+            switch(e.HttpRequestType)
             {
                 case HttpRequestType.Post:
-                    HTTPPost(ServerConfig.Instance.GetApiUrl(e.ApiRequest.requestType),
+                    HTTPPost(apiConfiguration.GetApiUrl(e.ApiRequest.requestType),
                         e.ApiRequest.requestType.ToString(),
                         JsonConvert.SerializeObject(e.ApiRequest),
                         e._responseCallback);
                     break;
                 case HttpRequestType.Get:
-                    HTTPGet(ServerConfig.Instance.GetApiUrl(e.ApiRequest.requestType),
+                    HTTPGet(apiConfiguration.GetApiUrl(e.ApiRequest.requestType),
                         e.ApiRequest.requestType.ToString(),
                         e._responseCallback);
                     break;
             }
-
+            
         }
 
         public void RemoveListener()
@@ -245,6 +250,11 @@ namespace GF
                     Debug.LogError($"Error occured {webRequest.result}");
                 }
             }
+        }
+
+        public void Update()
+        {
+            
         }
     }
 }

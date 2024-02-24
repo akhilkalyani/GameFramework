@@ -43,15 +43,6 @@ namespace GF
             _serviceType = serviceType;
         }
     }
-    public class ScreenChangeEvent<T> : GameEvent
-    {
-        private T _screenId;
-        public T ScreenID { get { return _screenId; } }
-        public ScreenChangeEvent(T screenid)
-        {
-            _screenId = screenid;
-        }
-    }
     public class LoadingScreenCreated:GameEvent
     {
         private DefaultLoadingUI _defaultLoadingUI;

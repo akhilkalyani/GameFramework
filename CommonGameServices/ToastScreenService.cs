@@ -1,11 +1,12 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 namespace GF
 {
     public class ToastScreenService : IService
     {
+        private bool isUpdateRequired = false;
         private ToastMessgeUI _toastMessgeUI;
+
+        public bool IsUpdateRequired => isUpdateRequired;
+
         public void Initialize()
         {
             Console.Log(LogType.Log, "ToastScreenService created");
@@ -31,6 +32,11 @@ namespace GF
         {
             EventManager.Instance.RemoveListener<ToastScreenCreated>(InitializeToastMessage);
             EventManager.Instance.RemoveListener<ToastEvent>(OnToastEvent);
+        }
+
+        public void Update()
+        {
+            
         }
     }
 }
