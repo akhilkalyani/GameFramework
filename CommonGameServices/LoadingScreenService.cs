@@ -7,6 +7,8 @@ namespace GF {
 
     public class LoadingScreenService : IService
     {
+        private bool isUpdateRequired = false;
+        public bool IsUpdateRequired => isUpdateRequired;
         private DefaultLoadingUI _defaultLoadingUI;
         public void Initialize()
         {
@@ -59,6 +61,10 @@ namespace GF {
             EventManager.Instance.RemoveListener<LoadingEvent>(OpenLoadingScreen);
             EventManager.Instance.RemoveListener<UnloadingEvent>(CloseLoadingScreen);
             EventManager.Instance.RemoveListener<SceneLoadingEvent>(LoadScene);
+        }
+        public void Update()
+        {
+            
         }
     }
 }

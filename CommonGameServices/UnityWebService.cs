@@ -11,6 +11,7 @@ namespace GF
 {
     public class UnityWebService : IService
     {
+        private bool isUpdateRequired = false;
         public class Request
         {
             public int RequestID;
@@ -26,6 +27,7 @@ namespace GF
         private Queue<Request> imageRequestQueue = new Queue<Request>();
         private string BearerToken;
         private string BearerTokenKey = "BearerToken";
+        public bool IsUpdateRequired => isUpdateRequired;
         public void Initialize()
         {
             Console.Log(LogType.Log, "UnityWebService created");
@@ -245,6 +247,10 @@ namespace GF
                     Debug.LogError($"Error occured {webRequest.result}");
                 }
             }
+        }
+        public void Update()
+        {
+            
         }
     }
 }
