@@ -1,26 +1,24 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using DG.Tweening;
+
 namespace GF
 {
-    public class ButtonClickEffect
+    public static class ButtonClickEffect
     {
         private static float scaleDown = 0.95f;
         private static float scaleUp = 1;
         private static float duration = 0.1f;
         private static GameObject lastObj = null;
-        public static void AddclickEffect(GameObject ob, ScrollRect scrollView = null, Action onClick = null)
+        public static void AddclickEffect(this Button ob, ScrollRect scrollView = null, Action onClick = null)
         {
             bool draging = false;
-            Button btn = ob.GetComponent<Button>();
             EventTrigger trigger = ob.GetComponent<EventTrigger>();
             if (trigger == null)
             {
-                ob.AddComponent<EventTrigger>();
+                ob.gameObject.AddComponent<EventTrigger>();
                 trigger = ob.GetComponent<EventTrigger>();
             }
             if (trigger.triggers.Find(x => x.eventID == EventTriggerType.PointerDown) == null)
@@ -33,7 +31,7 @@ namespace GF
                     draging = false;
                     if (lastObj)
                         lastObj.transform.DOKill();
-                    ob.transform.DOKill();
+                    ob.gameObject.transform.DOKill();
                     ob.transform.DOScale(new Vector3(scaleDown, scaleDown, scaleDown), duration);
                 });
                 trigger.triggers.Add(onPointerDown);
@@ -47,7 +45,7 @@ namespace GF
                         lastObj.transform.DOKill();
                     ob.transform.DOKill();
                     ob.transform.DOScale(new Vector3(scaleUp, scaleUp, scaleUp), duration);
-                    if (e.selectedObject == ob && !draging && btn && btn.interactable)
+                    if (e.selectedObject == ob && !draging && ob && ob.interactable)
                         onClick?.Invoke();
                 });
                 trigger.triggers.Add(onPointerup);
@@ -106,7 +104,7 @@ namespace GF
                 });
                 trigger.triggers.Add(onScroll);
             }
-            lastObj = ob;
+            lastObj = ob.gameObject;
         }
     }
 }

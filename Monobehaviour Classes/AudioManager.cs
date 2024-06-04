@@ -4,18 +4,18 @@ using UnityEngine;
 
 namespace GF
 {
-    public enum AudioType { Background=0,ButtonClick=1}
+    public enum Audio_type { Background=0,ButtonClick=1}
     public class AudioManager : Singleton<AudioManager>
     {
-        private Dictionary<AudioType, AudioSource> audioSourceDictionary;
+        private Dictionary<Audio_type, AudioSource> audioSourceDictionary;
         protected override void Awake()
         {   
             DontDestroyWhenLoad = true;
             ApplyHighlighter(Utils.GetColorByHashString("#00960C"), Color.white);
-            audioSourceDictionary = new Dictionary<AudioType, AudioSource>()
+            audioSourceDictionary = new Dictionary<Audio_type, AudioSource>()
             {
-                {AudioType.Background, Utils.GetOrAddComponent<AudioSource>(gameObject,true) },
-                {AudioType.ButtonClick, Utils.GetOrAddComponent<AudioSource>(gameObject,true) }
+                {Audio_type.Background, Utils.GetOrAddComponent<AudioSource>(gameObject,true) },
+                {Audio_type.ButtonClick, Utils.GetOrAddComponent<AudioSource>(gameObject,true) }
             };
             base.Awake();
         }
@@ -26,7 +26,7 @@ namespace GF
 
         private void PlayAudio(PlayAudioEvent e)
         {
-            audioSourceDictionary[e.AudioType].Play();
+            audioSourceDictionary[e.Audio_Type].Play();
         }
         protected override void OnApplicationQuit()
         {
