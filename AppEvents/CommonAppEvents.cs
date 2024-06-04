@@ -12,6 +12,7 @@ namespace GF
         public float Duration { get { return _duration; } }
         public ToastEvent(string message, float duration)
         {
+            SetIsDone(false);
             _message = message;
             _duration = duration;
         }
@@ -108,13 +109,13 @@ namespace GF
     }
     public class PlayAudioEvent : GameEvent
     {
-        private SoundType _SoundType;
+        private Audio_type audio;
         private AudioClip _audioClip;
         public AudioClip AudioClip { get { return _audioClip; } }
-        public SoundType SoundType { get { return _SoundType; } }
-        public PlayAudioEvent(SoundType SoundType, AudioClip audioClip)
+        public Audio_type Audio_Type { get { return audio; } }
+        public PlayAudioEvent(Audio_type SoundType, AudioClip audioClip)
         {
-            _SoundType = SoundType;
+            audio = SoundType;
             _audioClip = audioClip;
         }
     }

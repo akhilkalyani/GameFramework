@@ -25,7 +25,7 @@ namespace GF
 
         private void OnToastEvent(ToastEvent e)
         {
-            _toastMessgeUI.ShowToast(e.Message,e.Duration);
+            _toastMessgeUI.ShowToast(e);
         }
 
         public void RemoveListener()

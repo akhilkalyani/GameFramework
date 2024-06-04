@@ -8,6 +8,6 @@ namespace GF
     {
         [SerializeField] protected GameObject _toastContentParent;
         [SerializeField] protected TMP_Text messageTxt;
-        public abstract void ShowToast(string message,float duration);
+        public abstract void ShowToast(ToastEvent e);
     }
 }
