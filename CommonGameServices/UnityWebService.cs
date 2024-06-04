@@ -1,7 +1,10 @@
+using System.Net.Mime;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
+using Netconfig;
 using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -10,6 +13,7 @@ namespace GF
 {
     public class UnityWebService : IService
     {
+        private bool isUpdateRequired = false;
         public class Request
         {
             public int RequestID;
@@ -25,7 +29,7 @@ namespace GF
         private Queue<Request> imageRequestQueue = new Queue<Request>();
         private string BearerToken;
         private string BearerTokenKey = "BearerToken";
-        private ApiConfiguration apiConfiguration;
+        public bool IsUpdateRequired => isUpdateRequired;
         public void Initialize()
         {
             Console.Log(LogType.Log, "UnityWebService created");
@@ -38,50 +42,20 @@ namespace GF
             {
                 Directory.CreateDirectory(cashedImageUrl);
             }
-            apiConfiguration = Resources.Load<ApiConfiguration>("ApiConfiguration");
         }
 
-        
+
         public void RegisterListener()
         {
             EventManager.Instance.AddListener<DownloadImageEvent>(DoanloadImage);
+            EventManager.Instance.AddListener<DownlaodAudioEvent>(DownloadAudio);
             EventManager.Instance.AddListener<RaiseWebApiEvent>(OnApiRequest);
         }
 
-        
-        private void OnApiRequest(RaiseWebApiEvent e)
+        private async void DownloadAudio(DownlaodAudioEvent e)
         {
-            switch(e.HttpRequestType)
-            {
-                case HttpRequestType.Post:
-                    HTTPPost(apiConfiguration.GetApiUrl(e.ApiRequest.requestType),
-                        e.ApiRequest.requestType.ToString(),
-                        JsonConvert.SerializeObject(e.ApiRequest),
-                        e._responseCallback);
-                    break;
-                case HttpRequestType.Get:
-                    HTTPGet(apiConfiguration.GetApiUrl(e.ApiRequest.requestType),
-                        e.ApiRequest.requestType.ToString(),
-                        e._responseCallback);
-                    break;
-            }
-            
-        }
+            string url = e.Url;
 
-        public void RemoveListener()
-        {
-            EventManager.Instance.RemoveListener<DownloadImageEvent>(DoanloadImage);
-            EventManager.Instance.RemoveListener<RaiseWebApiEvent>(OnApiRequest);
-        }
-        /// <summary>
-        /// Use this function for downloading images
-        /// </summary>
-        /// <param name="url"></param>
-        /// <param name="image"></param>
-        protected void DoanloadImage(DownloadImageEvent downloadImageEvent)
-        {
-            string url=downloadImageEvent.Url;
-            Action<Texture2D> image=downloadImageEvent.Action;
             if (string.IsNullOrEmpty(url))
             {
                 Debug.LogError("Image url is empty or null");
@@ -95,9 +69,116 @@ namespace GF
                 url = "file://" + Path.Combine(cashedImageUrl, str[str.Length - 1]);
                 hascahed = true;
             }
-            Utils.CallEventAsync(new CoroutineEvent(DownloadImageRoutine(url, hascahed, image)));
+            Task task = DownloadAudioAsync(url, hascahed, e.Callback, e.ProgressCallback);
+            await task;
+        }
+        private async Task DownloadAudioAsync(string url, bool islocal, Action<AudioClip> calback, Action<float> progressCallback)
+        {
+            using (UnityWebRequest request = UnityWebRequestMultimedia.GetAudioClip(url, AudioType.MPEG))
+            {
+                // Send the request and wait for the response
+                var asyncOperation = request.SendWebRequest();
+                while (!asyncOperation.isDone)
+                {
+                    await Task.Yield();
+                    progressCallback?.Invoke(request.downloadProgress);
+                }
+                // Check for errors
+                if (request.result != UnityWebRequest.Result.Success)
+                {
+                    Debug.Log(request.error);
+                    calback?.Invoke(null);
+                }
+                else
+                {
+                    if (!islocal)
+                    {
+                        string[] fileName = url.Split('/');
+                        File.WriteAllBytes(Path.Combine(Application.persistentDataPath, fileName[fileName.Length - 1]), request.downloadHandler.data);
+                    }
+                    calback?.Invoke(DownloadHandlerAudioClip.GetContent(request));
+                }
+            }
+        }
+        private void OnApiRequest(RaiseWebApiEvent e)
+        {
+            switch (e.HttpRequestType)
+            {
+                case HttpRequestType.Post:
+                    HTTPPost(ServerConfig.Instance.GetApiUrl(e.ApiRequest.requestType),
+                        e.ApiRequest.requestType.ToString(),
+                        JsonConvert.SerializeObject(e.ApiRequest),
+                        e._responseCallback);
+                    break;
+                case HttpRequestType.Get:
+                    HTTPGet(ServerConfig.Instance.GetApiUrl(e.ApiRequest.requestType),
+                        e.ApiRequest.requestType.ToString(),
+                        e._responseCallback);
+                    break;
+            }
+
         }
 
+        public void RemoveListener()
+        {
+            EventManager.Instance.RemoveListener<DownloadImageEvent>(DoanloadImage);
+            EventManager.Instance.RemoveListener<DownlaodAudioEvent>(DownloadAudio);
+            EventManager.Instance.RemoveListener<RaiseWebApiEvent>(OnApiRequest);
+        }
+        /// <summary>
+        /// Use this function for downloading images
+        /// </summary>
+        /// <param name="url"></param>
+        /// <param name="image"></param>
+        protected async void DoanloadImage(DownloadImageEvent downloadImageEvent)
+        {
+            string url = downloadImageEvent.Url;
+
+            if (string.IsNullOrEmpty(url))
+            {
+                Debug.LogError("Image url is empty or null");
+                return;
+            }
+            bool hascahed = false;
+            string[] str = url.Split('/');
+
+            if (File.Exists(Path.Combine(cashedImageUrl, str[str.Length - 1])))
+            {
+                url = "file://" + Path.Combine(cashedImageUrl, str[str.Length - 1]);
+                hascahed = true;
+            }
+            //Utils.CallEventAsync(new CoroutineEvent(DownloadImageRoutine(url, hascahed, image)));
+            Task task = DownloadImageAsync(url, hascahed, downloadImageEvent.Action);
+            await task;
+        }
+        private async Task DownloadImageAsync(string url, bool islocal, Action<Texture2D> image)
+        {
+            using (UnityWebRequest request = UnityWebRequestTexture.GetTexture(url))
+            {
+                // Send the request and wait for the response
+                var asyncOperation = request.SendWebRequest();
+
+                while (!asyncOperation.isDone)
+                {
+                    await Task.Yield();
+                }
+                // Check for errors
+                if (request.result != UnityWebRequest.Result.Success)
+                {
+                    Debug.Log(request.error);
+                    image?.Invoke(null);
+                }
+                else
+                {
+                    if (!islocal)
+                    {
+                        string[] fileName = url.Split('/');
+                        File.WriteAllBytes(Path.Combine(Application.persistentDataPath, fileName[fileName.Length - 1]), request.downloadHandler.data);
+                    }
+                    image?.Invoke(DownloadHandlerTexture.GetContent(request));
+                }
+            }
+        }
         private IEnumerator DownloadImageRoutine(string url, bool islocal, Action<Texture2D> image)
         {
             float waitTime = 0;
@@ -123,7 +204,7 @@ namespace GF
             {
                 Debug.Log("<color=magenta>Request Arrive->" + imageRequestCount + "</color>");
                 yield return request.SendWebRequest();
-                if (request.result!=UnityWebRequest.Result.Success)
+                if (request.result != UnityWebRequest.Result.Success)
                 {
                     Debug.Log(request.error);
                     image?.Invoke(null);
@@ -188,22 +269,22 @@ namespace GF
         /// <param name="data"></param>
         /// <param name="OnPostCompleteCalback"></param>
         /// <param name="OnProgressCallback"></param>
-        
+
         protected void HTTPPost(string url, string requestType, string data, Action<string, string, string> OnPostCompleteCalback)
         {
             Utils.CallEventAsync(new CoroutineEvent(PostRequest(url, requestType, data, OnPostCompleteCalback)));
         }
 
-        
+
         private IEnumerator PostRequest(string url, string requestType, string data, Action<string, string, string> onPostCompleteCalback)
         {
-            using (var request = UnityWebRequest.Post(url, data))
+            using (var request = UnityWebRequest.PostWwwForm(url, data))
             {
                 request.SetRequestHeader("Content-Type", "application/json");
                 request.SetRequestHeader("Authorization", "Bearer " + BearerToken);
                 yield return request.SendWebRequest();
 
-                if (request.result!=UnityWebRequest.Result.Success)
+                if (request.result != UnityWebRequest.Result.Success)
                     Debug.Log("Network error has occured: " + request.GetResponseHeader(""));
                 else
                 {
@@ -246,6 +327,10 @@ namespace GF
                     Debug.LogError($"Error occured {webRequest.result}");
                 }
             }
+        }
+        public void Update()
+        {
+
         }
     }
 }

@@ -19,10 +19,6 @@ namespace GF
         {
             EventManager.Instance.QueueEvent(gameEvent);
         }
-        public static void StartExecutingSynchronousEvents()
-        {
-            EventManager.Instance.ExecuteQueueEvent();
-        }
         public static bool ColorCompare(Color a, Color b, int diff)
         {
             return (int)(Mathf.Abs(a.r - b.r) * 100) < diff &&

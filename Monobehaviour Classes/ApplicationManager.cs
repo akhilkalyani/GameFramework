@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 namespace GF
 {
@@ -18,7 +17,6 @@ namespace GF
         }
         private void InitializeServices()
         {            
-            EventManager.Instance.Start();
             _gameServiceController = new GameServiceController();
             _gameServiceController.Initialize();
             _gameServiceController.RegisterListener();
@@ -26,18 +24,27 @@ namespace GF
         public void SpawnLoadingAndToastScreen(string loadingScreenpath,string toastScreenPath)
         {
             _audioManager = AudioManager.Instance;
-            if (string.IsNullOrEmpty(loadingScreenpath)) return; 
-            var _loadingScreenGameobject = Instantiate(Resources.Load<DefaultLoadingUI>(loadingScreenpath),transform);
-            _loadingScreenGameobject.name = $"DefaultLoadingUI";
-            Utils.CallEventAsync(new LoadingScreenCreated(_loadingScreenGameobject));
-            if(string.IsNullOrEmpty(toastScreenPath)) return;
-            var toastScreen = Instantiate(Resources.Load<ToastMessgeUI>(toastScreenPath),transform);
-            toastScreen.name = $"DefaultToastUI";
-            Utils.CallEventAsync(new ToastScreenCreated(toastScreen));
+            if (!string.IsNullOrEmpty(loadingScreenpath))
+            {
+                var _loadingScreenGameobject = Instantiate(Resources.Load<DefaultLoadingUI>(loadingScreenpath),transform);
+                _loadingScreenGameobject.name = $"DefaultLoadingUI";
+                Utils.CallEventAsync(new LoadingScreenCreated(_loadingScreenGameobject));
+            }
+            if (!string.IsNullOrEmpty(toastScreenPath))
+            {
+                var toastScreen = Instantiate(Resources.Load<ToastMessgeUI>(toastScreenPath),transform);
+                toastScreen.name = $"DefaultToastUI";
+                Utils.CallEventAsync(new ToastScreenCreated(toastScreen));
+            }
         }
         public void AddService<T>()
         {
             Utils.CallEventAsync(new AddServiceEvent(typeof(T)));
+        }
+        private void Update()
+        {
+            _gameServiceController.Update();
+            EventManager.Instance.Update();
         }
         protected override void OnApplicationQuit()
         {

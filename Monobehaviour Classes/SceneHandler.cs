@@ -15,8 +15,11 @@ namespace GF
         private readonly Dictionary<T, BaseScreen<T>> _screensDictionary = new Dictionary<T, BaseScreen<T>>();
         public T StartScreen;
         protected BaseScreen<T> currentActiveScreen;
+        private static SceneHandler<T> instance;
+        public static SceneHandler<T> Instance=>instance;
         protected virtual void Awake()
         {
+            instance = this;
             ApplicationManager.Instance.SpawnLoadingAndToastScreen(LoadingScreenPath,ToastScreenPath);
         }
         protected virtual void Start()
@@ -38,11 +41,12 @@ namespace GF
         }
         private void RegisterListener()
         {
-            EventManager.Instance.AddListener<ScreenChangeEvent<T>>(ChangeScreen);
+            
         }
-        private void ChangeScreen(ScreenChangeEvent<T> e)
+
+        public void ChangeScreen(T screen)
         {
-            var nextScreen = GetScreen(e.ScreenID);
+            var nextScreen = GetScreen(screen);
             if (nextScreen != null)
             {
                 nextScreen.OpenScreen();
@@ -88,7 +92,7 @@ namespace GF
         }
         private void RemoveListener()
         {
-            EventManager.Instance.RemoveListener<ScreenChangeEvent<T>>(ChangeScreen);
+            
         }
         private void OnDisable()
         {

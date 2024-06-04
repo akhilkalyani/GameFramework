@@ -21,9 +21,9 @@ namespace GF
                 return _instance;
             }
         }
-        public Action OnSynchronizeEventComplete;
         private readonly Dictionary<Type, EventListener> eventListeners = new Dictionary<Type, EventListener>();
         private readonly Queue<GameEvent> queueEvents = new Queue<GameEvent>();
+        private EventListener currentEvent = null;
         /// <summary>
         /// Add particular Evnet to event dictionary.
         /// </summary>
@@ -38,24 +38,29 @@ namespace GF
             }
             invoker.eventHandler += (e) => eventHandler((T)e);
         }
-
-        public void Start()
-        {
-            OnSynchronizeEventComplete += CompletedQueueEvent;   
-        }
-        public void ExecuteQueueEvent()
-        {
-            if(queueEvents.Count>0)
-                TriggerEvent(queueEvents.Dequeue());
-        }
-        private void CompletedQueueEvent()
-        {
-            ExecuteQueueEvent();
-        }
         public void QueueEvent(GameEvent ev)
         {
             queueEvents.Enqueue(ev);
         }
+        public void Update()
+        {
+            if(queueEvents.Count>0 && IsCurrentEventCompleted())
+            {
+                GameEvent evt = queueEvents.Dequeue();
+                if (eventListeners.TryGetValue(evt.GetType(), out EventListener invoker))
+                {
+                    currentEvent = invoker;
+                    invoker.Invoke(evt);
+                }
+            }
+        }
+
+        private bool IsCurrentEventCompleted()
+        {
+            if (currentEvent == null) return true;
+            return currentEvent.IsDone();
+        }
+
         /// <summary>
         /// Remove particular Evnet from event dictionary.
         /// </summary>
@@ -101,7 +106,6 @@ namespace GF
                 value.Clear();
             }
             eventListeners.Clear();
-            OnSynchronizeEventComplete -= CompletedQueueEvent;
         }
     }
     /// <summary>
@@ -113,15 +117,20 @@ namespace GF
         public delegate void EventHandler<T>(T e) where T : GameEvent;
 
         public EventHandler eventHandler;
-
+        private GameEvent gameEvent;
         public void Invoke(GameEvent ge)
         {
+            gameEvent = ge;
             eventHandler?.Invoke(ge);
         }
 
         public void Clear()
         {
             eventHandler = null;
+        }
+        public bool IsDone()
+        {
+            return gameEvent.IsDone();
         }
     }
     /// <summary>
@@ -130,6 +139,14 @@ namespace GF
     /// </summary>
     public class GameEvent
     {
-
+        private bool isDone=false;
+        public bool IsDone()
+        {
+            return isDone;
+        }
+        public void SetIsDone(bool status)
+        {
+            isDone = status;
+        }
     }
 }

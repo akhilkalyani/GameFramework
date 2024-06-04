@@ -16,6 +16,7 @@ public abstract class DefaultLoadingUI : MonoBehaviour
     protected float _minimumWaitDuration = 1f;
     public void UpdateProgress(float progress)
     {
+        if (_progressbar == null) return;
         _progressbar.fillAmount = progress;
     }
     public abstract void Load(Action onComplete);
