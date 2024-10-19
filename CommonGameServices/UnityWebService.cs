@@ -47,7 +47,7 @@ namespace GF
 
         public void RegisterListener()
         {
-            EventManager.Instance.AddListener<DownloadImageEvent>(DoanloadImage);
+            EventManager.Instance.AddListener<DownloadImageEvent>(DownloadImage);
             EventManager.Instance.AddListener<DownlaodAudioEvent>(DownloadAudio);
             EventManager.Instance.AddListener<RaiseWebApiEvent>(OnApiRequest);
         }
@@ -121,7 +121,7 @@ namespace GF
 
         public void RemoveListener()
         {
-            EventManager.Instance.RemoveListener<DownloadImageEvent>(DoanloadImage);
+            EventManager.Instance.RemoveListener<DownloadImageEvent>(DownloadImage);
             EventManager.Instance.RemoveListener<DownlaodAudioEvent>(DownloadAudio);
             EventManager.Instance.RemoveListener<RaiseWebApiEvent>(OnApiRequest);
         }
@@ -130,7 +130,7 @@ namespace GF
         /// </summary>
         /// <param name="url"></param>
         /// <param name="image"></param>
-        protected async void DoanloadImage(DownloadImageEvent downloadImageEvent)
+        protected void DownloadImage(DownloadImageEvent downloadImageEvent)
         {
             string url = downloadImageEvent.Url;
 
@@ -147,9 +147,9 @@ namespace GF
                 url = "file://" + Path.Combine(cashedImageUrl, str[str.Length - 1]);
                 hascahed = true;
             }
-            //Utils.CallEventAsync(new CoroutineEvent(DownloadImageRoutine(url, hascahed, image)));
-            Task task = DownloadImageAsync(url, hascahed, downloadImageEvent.Action);
-            await task;
+            Utils.CallEventAsync(new CoroutineEvent(DownloadImageRoutine(url, hascahed, downloadImageEvent.Action)));
+            // Task task = DownloadImageAsync(url, hascahed, downloadImageEvent.Action);
+            // await task;
         }
         private async Task DownloadImageAsync(string url, bool islocal, Action<Texture2D> image)
         {
@@ -196,20 +196,18 @@ namespace GF
                         isWait = false;
                     yield return null;
                 }
-
-                Debug.Log("wait time->" + waitTime);
                 yield return new WaitUntil(() => !isWait);
             }
             using (UnityWebRequest request = UnityWebRequestTexture.GetTexture(url))
             {
                 Debug.Log("<color=magenta>Request Arrive->" + imageRequestCount + "</color>");
                 yield return request.SendWebRequest();
+                var finishedRequest = imageRequestQueue.Dequeue();
+                Debug.Log("<color=blue>Request is Completed with failed status->" + finishedRequest.RequestID + "</color>");
                 if (request.result != UnityWebRequest.Result.Success)
                 {
                     Debug.Log(request.error);
                     image?.Invoke(null);
-                    var finishedRequest = imageRequestQueue.Dequeue();
-                    Debug.Log("<color=blue>Request is Completed with failed status->" + finishedRequest.RequestID + "</color>");
                 }
                 else
                 {
@@ -219,15 +217,14 @@ namespace GF
                         File.WriteAllBytes(Path.Combine(Application.persistentDataPath, fileName[fileName.Length - 1]), request.downloadHandler.data);
                     }
                     image?.Invoke(DownloadHandlerTexture.GetContent(request));
-                    var finishedRequest = imageRequestQueue.Dequeue();
-                    Debug.Log("<color=blue>Request is Completed->" + finishedRequest.RequestID + "</color>");
+                }
+                if (imageRequestQueue.Count == 0)
+                {
+                    waitTime = 0;
+                    imageRequestCount = 0;
                 }
             }
-            if (imageRequestQueue.Count == 0)
-            {
-                waitTime = 0;
-                imageRequestCount = 0;
-            }
+
         }
         /// <summary>
         /// It used for downloading any binary file from server using desire url.

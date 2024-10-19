@@ -35,15 +35,6 @@ namespace GF
             _oncomplete = action;
         }
     }
-    public class AddServiceEvent : GameEvent
-    {
-        private Type _serviceType;
-        public Type ServiceType { get { return _serviceType; } }
-        public AddServiceEvent(Type serviceType)
-        {
-            _serviceType = serviceType;
-        }
-    }
     public class LoadingScreenCreated : GameEvent
     {
         private DefaultLoadingUI _defaultLoadingUI;
@@ -51,15 +42,6 @@ namespace GF
         public LoadingScreenCreated(DefaultLoadingUI defaultLoadingUI)
         {
             _defaultLoadingUI = defaultLoadingUI;
-        }
-    }
-    public class ToastScreenCreated : GameEvent
-    {
-        private ToastMessgeUI _toastMessgeUI;
-        public ToastMessgeUI ToastMessgeUI { get { return _toastMessgeUI; } }
-        public ToastScreenCreated(ToastMessgeUI toastMessgeUI)
-        {
-            _toastMessgeUI = toastMessgeUI;
         }
     }
     public class SceneLoadingEvent : GameEvent
@@ -137,5 +119,28 @@ namespace GF
     public class WebApiRequest
     {
         public RequestType requestType;
+    }
+    public class CreateToastEvent : GameEvent
+    {
+        private ITaost taostInstance;
+        public ITaost TaostInstance { get { return taostInstance; } }
+        public CreateToastEvent(ITaost taostInstance)
+        {
+            this.taostInstance = taostInstance;
+        }
+    }
+    public class ToastShowEvent : GameEvent
+    {
+        private string message;
+        private float duration;
+        public string Message { get { return message; } }
+
+        public float Duration { get { return duration; } }
+
+
+        public ToastShowEvent(string message)
+        {
+            this.message = message;
+        }
     }
 }

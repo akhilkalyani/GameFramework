@@ -21,7 +21,7 @@ namespace GF
             _gameServiceController.Initialize();
             _gameServiceController.RegisterListener();
         }
-        public void SpawnLoadingAndToastScreen(string loadingScreenpath,string toastScreenPath)
+        public void SpawnLoadingAndToastScreen(string loadingScreenpath)
         {
             _audioManager = AudioManager.Instance;
             if (!string.IsNullOrEmpty(loadingScreenpath))
@@ -30,16 +30,10 @@ namespace GF
                 _loadingScreenGameobject.name = $"DefaultLoadingUI";
                 Utils.CallEventAsync(new LoadingScreenCreated(_loadingScreenGameobject));
             }
-            if (!string.IsNullOrEmpty(toastScreenPath))
-            {
-                var toastScreen = Instantiate(Resources.Load<ToastMessgeUI>(toastScreenPath),transform);
-                toastScreen.name = $"DefaultToastUI";
-                Utils.CallEventAsync(new ToastScreenCreated(toastScreen));
-            }
         }
         public void AddService<T>()
         {
-            Utils.CallEventAsync(new AddServiceEvent(typeof(T)));
+            _gameServiceController.AddService(typeof(T));
         }
         private void Update()
         {
