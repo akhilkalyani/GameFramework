@@ -6,13 +6,14 @@ namespace GF
 {
     public class GameServiceController
     {
-        private Dictionary<Type, IService> services = new Dictionary<Type, IService>();   
+        private Dictionary<Type, IService> services = new Dictionary<Type, IService>();
+        private List<IService> updateRequiredServices = new List<IService>();
         public void Initialize()
         {
             Console.Log(LogType.Log, "GameServiceController created");
             foreach (var type in GetAllTypesThatImplementInterface<IService>())
             {
-                services.Add(type,(IService)Activator.CreateInstance(type));
+                services.Add(type, (IService)Activator.CreateInstance(type));
             }
         }
 
@@ -20,7 +21,7 @@ namespace GF
         {
             return Assembly.GetExecutingAssembly()
                 .GetTypes()
-                .Where(type =>type.Namespace=="GF" && typeof(T).IsAssignableFrom(type) && !type.IsInterface);
+                .Where(type => type.Namespace == "GF" && typeof(T).IsAssignableFrom(type) && !type.IsInterface);
         }
         public void RegisterListener()
         {
@@ -29,18 +30,19 @@ namespace GF
                 service.Initialize();
                 service.RegisterListener();
             }
-            EventManager.Instance.AddListener<AddServiceEvent>(AddService);
+            updateRequiredServices = services.Values.Where(s => s.IsUpdateRequired == true).ToList();
         }
-        public void AddService(AddServiceEvent serviceEvent)
+        public void AddService(Type serviceType)
         {
-            var service = (IService)Activator.CreateInstance(serviceEvent.ServiceType);
+            var service = (IService)Activator.CreateInstance(serviceType);
             service.Initialize();
             service.RegisterListener();
-            services.Add(serviceEvent.ServiceType, service);
+            services.Add(serviceType, service);
+            if (service.IsUpdateRequired) updateRequiredServices.Add(service);
         }
         public void Update()
         {
-            foreach (var service in services.Values.Where(s=>s.IsUpdateRequired==true))
+            foreach (var service in updateRequiredServices)
             {
                 service.Update();
             }
@@ -59,7 +61,7 @@ namespace GF
                 }
             }
             services.Clear();
-            EventManager.Instance.RemoveListener<AddServiceEvent>(AddService);
+            updateRequiredServices.Clear();
         }
     }
 }

@@ -9,8 +9,6 @@ namespace GF
         public string UIprefabPath;
         [Header("LoadingScreen prefab path")]
         public string LoadingScreenPath;
-        [Header("ToastScreen prefab path")]
-        public string ToastScreenPath;
         protected GameObject GUI = null;
         private readonly Dictionary<T, BaseScreen<T>> _screensDictionary = new Dictionary<T, BaseScreen<T>>();
         public T StartScreen;
@@ -20,11 +18,10 @@ namespace GF
         protected virtual void Awake()
         {
             instance = this;
-            ApplicationManager.Instance.SpawnLoadingAndToastScreen(LoadingScreenPath,ToastScreenPath);
+            ApplicationManager.Instance.SpawnLoadingAndToastScreen(LoadingScreenPath);
         }
         protected virtual void Start()
         {
-            RegisterListener();
             if (IsScreensPrepared())
             {
                 ApplyHighlighter(Utils.GetColorByHashString("#E20D6B"), Color.white," GUI");
@@ -39,11 +36,6 @@ namespace GF
             }
             RegisterServices();
         }
-        private void RegisterListener()
-        {
-            
-        }
-
         public void ChangeScreen(T screen)
         {
             var nextScreen = GetScreen(screen);
@@ -89,14 +81,6 @@ namespace GF
             {
                 return null;
             }
-        }
-        private void RemoveListener()
-        {
-            
-        }
-        private void OnDisable()
-        {
-            RemoveListener();
         }
         protected abstract void RegisterServices();
     }
