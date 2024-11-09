@@ -7,10 +7,10 @@ namespace GF
     /// <summary>
     /// Manages All Events in the game.
     /// </summary>
-    public class EventManager
+    internal class EventManager
     {
         private static EventManager _instance = null;
-        public static EventManager Instance
+        internal static EventManager Instance
         {
             get
             {
@@ -29,7 +29,7 @@ namespace GF
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="eventHandler"></param>
-        public void AddListener<T>(EventListener.EventHandler<T> eventHandler) where T : GameEvent
+        internal void AddListener<T>(EventListener.EventHandler<T> eventHandler) where T : GameEvent
         {
             if (!eventListeners.TryGetValue(typeof(T), out EventListener invoker))
             {
@@ -38,11 +38,11 @@ namespace GF
             }
             invoker.eventHandler += (e) => eventHandler((T)e);
         }
-        public void QueueEvent(GameEvent ev)
+        internal void QueueEvent(GameEvent ev)
         {
             queueEvents.Enqueue(ev);
         }
-        public void Update()
+        internal void Update()
         {
             if(queueEvents.Count>0 && IsCurrentEventCompleted())
             {
@@ -66,7 +66,7 @@ namespace GF
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="eventHandler"></param>
-        public void RemoveListener<T>(EventListener.EventHandler<T> eventHandler) where T : GameEvent
+        internal void RemoveListener<T>(EventListener.EventHandler<T> eventHandler) where T : GameEvent
         {
             if (eventListeners.TryGetValue(typeof(T), out EventListener invoker))
             {
@@ -79,7 +79,7 @@ namespace GF
         /// </summary>
         /// <param name="eventType"></param>
         /// <returns></returns>
-        public bool HasListener(Type eventType)
+        internal bool HasListener(Type eventType)
         {
             return eventListeners.ContainsKey(eventType);
         }
@@ -88,7 +88,7 @@ namespace GF
         /// Triger particular event.
         /// </summary>
         /// <param name="evt"></param>
-        public void TriggerEvent(GameEvent evt)
+        internal void TriggerEvent(GameEvent evt)
         {
             if (eventListeners.TryGetValue(evt.GetType(), out EventListener invoker))
             {
@@ -99,7 +99,7 @@ namespace GF
         /// <summary>
         /// Release all events.
         /// </summary>
-        public void ReleaseEvents()
+        internal void ReleaseEvents()
         {
             foreach (EventListener value in eventListeners.Values)
             {

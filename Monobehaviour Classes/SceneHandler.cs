@@ -1,20 +1,22 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using UnityEngine;
 namespace GF
 {
-    public abstract class SceneHandler<T> : MonoBehaviour where T:Enum
+    public abstract class SceneHandler<T> : MonoBehaviour where T : Enum
     {
         [Header("UI canvas prefab")]
-        public string UIprefabPath;
+        [SerializeField]private string UIprefabPath;
         [Header("LoadingScreen prefab path")]
-        public string LoadingScreenPath;
+        [SerializeField]private string LoadingScreenPath;
         protected GameObject GUI = null;
         private readonly Dictionary<T, BaseScreen<T>> _screensDictionary = new Dictionary<T, BaseScreen<T>>();
         public T StartScreen;
         protected BaseScreen<T> currentActiveScreen;
         private static SceneHandler<T> instance;
-        public static SceneHandler<T> Instance=>instance;
+        public static SceneHandler<T> Instance => instance;
         protected virtual void Awake()
         {
             instance = this;
@@ -24,7 +26,7 @@ namespace GF
         {
             if (IsScreensPrepared())
             {
-                ApplyHighlighter(Utils.GetColorByHashString("#E20D6B"), Color.white," GUI");
+                ApplyHighlighter(Utils.GetColorByHashString("#E20D6B"), Color.white, " GUI");
                 var screens = GUI.GetComponentsInChildren<BaseScreen<T>>(true);
                 for (int i = 0; i < screens.Length; i++)
                 {
@@ -48,7 +50,7 @@ namespace GF
         }
         private bool IsScreensPrepared()
         {
-            if(string.IsNullOrEmpty(UIprefabPath))
+            if (string.IsNullOrEmpty(UIprefabPath))
             {
                 Debug.LogWarning("Specify Main UI Canvas parent prefab path in the Inspector.");
                 return false;
@@ -61,11 +63,11 @@ namespace GF
                 can.renderMode = RenderMode.ScreenSpaceCamera;
                 can.worldCamera = Camera.main;
                 return true;
-            }    
+            }
         }
         protected void ApplyHighlighter(Color bg, Color text, string name)
         {
-            GUI.name =$"{GUI.name}-->{name}";
+            GUI.name = $"{GUI.name}-->{name}";
             HierarchyHighlighter hr = GUI.GetComponent<HierarchyHighlighter>();
             hr.Background_Color = bg;
             hr.Text_Color = text;
@@ -83,5 +85,10 @@ namespace GF
             }
         }
         protected abstract void RegisterServices();
+        protected Assembly GetAssembly(string assemblyName)
+        {
+            return AppDomain.CurrentDomain.GetAssemblies()
+                .FirstOrDefault(asm => asm.GetName().Name == assemblyName);
+        }
     }
 }
