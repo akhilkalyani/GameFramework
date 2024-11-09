@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Reflection;
 using UnityEngine;
 
 namespace GF
@@ -89,18 +90,6 @@ namespace GF
             _enumerator = enumerator;
         }
     }
-    public class PlayAudioEvent : GameEvent
-    {
-        private Audio_type audio;
-        private AudioClip _audioClip;
-        public AudioClip AudioClip { get { return _audioClip; } }
-        public Audio_type Audio_Type { get { return audio; } }
-        public PlayAudioEvent(Audio_type SoundType, AudioClip audioClip)
-        {
-            audio = SoundType;
-            _audioClip = audioClip;
-        }
-    }
     public class RaiseWebApiEvent : GameEvent
     {
         private HttpRequestType _httpRequestType;
@@ -141,6 +130,16 @@ namespace GF
         public ToastShowEvent(string message)
         {
             this.message = message;
+        }
+    }
+    public class RegisterCustomServiceEvent : GameEvent{
+        private string nameSpaceType;
+        private Assembly assembly;
+        public string NameSpaceType=>nameSpaceType;
+        public Assembly Assembly=>assembly;
+        public RegisterCustomServiceEvent(string nameSpaceType,Assembly assembly){
+            this.nameSpaceType=nameSpaceType;
+            this.assembly=assembly;
         }
     }
 }

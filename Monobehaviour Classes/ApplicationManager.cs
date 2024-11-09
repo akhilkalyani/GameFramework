@@ -7,7 +7,6 @@ namespace GF
     public class ApplicationManager : Singleton<ApplicationManager>
     {
         private GameServiceController _gameServiceController;
-        private AudioManager _audioManager;
         protected override void Awake()
         {
             DontDestroyWhenLoad = true;
@@ -23,7 +22,6 @@ namespace GF
         }
         public void SpawnLoadingAndToastScreen(string loadingScreenpath)
         {
-            _audioManager = AudioManager.Instance;
             if (!string.IsNullOrEmpty(loadingScreenpath))
             {
                 var _loadingScreenGameobject = Instantiate(Resources.Load<DefaultLoadingUI>(loadingScreenpath),transform);
@@ -34,6 +32,14 @@ namespace GF
         public void AddService<T>()
         {
             _gameServiceController.AddService(typeof(T));
+        }
+        public void RegisterAppEvent<T>(EventListener.EventHandler<T> eventHandler) where T : GameEvent
+        {
+            EventManager.Instance.AddListener(eventHandler);
+        }
+        public void RemoveAppEvent<T>(EventListener.EventHandler<T> eventHandler) where T : GameEvent
+        {
+            EventManager.Instance.RemoveListener(eventHandler);
         }
         private void Update()
         {
