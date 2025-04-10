@@ -3,7 +3,10 @@
 //Website : Polyandcode.com 
 
 using System;
+using System.Collections;
+using NestedScroll.Core;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace PolyAndCode.UI
@@ -11,12 +14,13 @@ namespace PolyAndCode.UI
     /// <summary>
     /// Entry for the recycling system. Extends Unity's inbuilt ScrollRect.
     /// </summary>
-    public class RecyclableScrollRect : ScrollRect
+    public class RecyclableScrollRect : NestedScrollView
     {
         [HideInInspector]
         public IRecyclableScrollRectDataSource DataSource;
 
         public bool IsGrid;
+        public bool IsInfinite;
         //Prototype cell can either be a prefab or present as a child to the content(will automatically be disabled in runtime)
         public RectTransform PrototypeCell;
         //If true the intiziation happens at Start. Controller must assign the datasource in Awake.
@@ -67,6 +71,11 @@ namespace PolyAndCode.UI
         private void Initialize()
         {
             //Contruct the recycling system.
+            var childrens = content.GetComponentsInChildren<ICell>();
+            foreach (var cell in childrens)
+            {
+                Destroy(cell.GetGameObject());
+            }
             if (Direction == DirectionType.Vertical)
             {
                 _recyclingSystem = new VerticalRecyclingSystem(PrototypeCell, viewport, content, DataSource, IsGrid, Segments);
@@ -75,6 +84,7 @@ namespace PolyAndCode.UI
             {
                 _recyclingSystem = new HorizontalRecyclingSystem(PrototypeCell, viewport, content, DataSource, IsGrid, Segments);
             }
+            _recyclingSystem.IsInfinite = IsInfinite;
             vertical = Direction == DirectionType.Vertical;
             horizontal = Direction == DirectionType.Horizontal;
 
@@ -94,7 +104,6 @@ namespace PolyAndCode.UI
             DataSource = dataSource;
             Initialize();
         }
-
         /// <summary>
         /// Added as a listener to the OnValueChanged event of Scroll rect.
         /// Recycling entry point for recyling systems.
@@ -106,7 +115,6 @@ namespace PolyAndCode.UI
             m_ContentStartPosition += _recyclingSystem.OnValueChangedListener(dir);
             _prevAnchoredPos = content.anchoredPosition;
         }
-
         /// <summary>
         ///Reloads the data. Call this if a new datasource is assigned.
         /// </summary>
@@ -114,7 +122,6 @@ namespace PolyAndCode.UI
         {
             ReloadData(DataSource);
         }
-
         /// <summary>
         /// Overloaded ReloadData with dataSource param
         ///Reloads the data. Call this if a new datasource is assigned.

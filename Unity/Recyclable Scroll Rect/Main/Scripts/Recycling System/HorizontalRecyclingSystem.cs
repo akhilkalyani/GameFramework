@@ -6,6 +6,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace PolyAndCode.UI
 {
@@ -28,22 +29,20 @@ namespace PolyAndCode.UI
 
         //Temps, Flags
         private readonly Vector3[] _corners = new Vector3[4];
-        private bool _recycling;
+        private bool _recycling = true;
 
         //Trackers
-        private int currentItemCount; //item count corresponding to the datasource.
         private int leftMostCellIndex, rightMostCellIndex; //Topmost and bottommost cell in the List
         private int _leftMostCellRow, _RightMostCellRow; // used for recyling in Grid layout. leftmost and rightmost row
 
         //Cached zero vector 
         private Vector2 zeroVector = Vector2.zero;
         #region INIT
-        public HorizontalRecyclingSystem(RectTransform prototypeCell, RectTransform viewport, RectTransform content, IRecyclableScrollRectDataSource dataSource, bool isGrid, int rows)
+        public HorizontalRecyclingSystem(RectTransform prototypeCell, RectTransform viewport, RectTransform content, IRecyclableScrollRectDataSource dataSource, bool isGrid, int rows) : base(dataSource)
         {
             PrototypeCell = prototypeCell;
             Viewport = viewport;
             Content = content;
-            DataSource = dataSource;
             IsGrid = isGrid;
             _rows = isGrid ? rows : 1;
             _recyclableViewBounds = new Bounds();
@@ -64,8 +63,7 @@ namespace PolyAndCode.UI
             SetRecyclingBounds();
 
             //Cell Poool
-            CreateCellPool();
-            currentItemCount = _cellPool.Count;
+            bool canContentMove = CreateCellPool();
             leftMostCellIndex = 0;
             rightMostCellIndex = _cellPool.Count - 1;
 
@@ -74,8 +72,26 @@ namespace PolyAndCode.UI
             float contentXSize = coloums * _cellWidth;
             Content.sizeDelta = new Vector2(contentXSize, Content.sizeDelta.y);
             SetLeftAnchor(Content);
-
             if (onInitialized != null) onInitialized();
+            if (!IsInfinite && canContentMove)
+            {
+                MoveContetToDesirePlace();
+            }
+            else
+            {
+                _recycling = false;
+            }
+        }
+        private void MoveContetToDesirePlace()
+        {
+            int difference = DataSource.GetItemCount() - DataSource.GetStartingIndex();
+            int targetCellIndex = _cachedCells.Count - difference;
+            if (targetCellIndex >= 0 && targetCellIndex < _cellPool.Count)
+            {
+                float targetX = Content.anchoredPosition.x + (_cellWidth * targetCellIndex);
+                Content.anchoredPosition = new Vector2(-targetX, Content.anchoredPosition.y);
+                _recycling = false;
+            }
         }
 
         /// <summary>
@@ -92,8 +108,9 @@ namespace PolyAndCode.UI
         /// <summary>
         /// Creates cell Pool for recycling, Caches ICells
         /// </summary>
-        private void CreateCellPool()
+        private bool CreateCellPool()
         {
+            bool isContentForceMove = false;
             //Reseting Pool
             if (_cellPool != null)
             {
@@ -127,7 +144,15 @@ namespace PolyAndCode.UI
             //Get the required pool coverage and mininum size for the Cell pool
             float requriedCoverage = MinPoolCoverage * Viewport.rect.width;
             int minPoolSize = Math.Min(MinPoolSize, DataSource.GetItemCount());
-
+            if (!IsInfinite)
+            {
+                int offset = DataSource.GetItemCount() - minPoolSize;
+                if (currentItemCount > offset)
+                {
+                    currentItemCount = offset;
+                    isContentForceMove = true;
+                }
+            }
             //create cells untill the Pool area is covered and pool size is the minimum required
             while ((poolSize < minPoolSize || currentPoolCoverage < requriedCoverage) && poolSize < DataSource.GetItemCount())
             {
@@ -158,22 +183,22 @@ namespace PolyAndCode.UI
 
                 //Setting data for Cell
                 _cachedCells.Add(item.GetComponent<ICell>());
-                DataSource.SetCell(_cachedCells[_cachedCells.Count - 1], poolSize);
+                DataSource.SetCell(_cachedCells[_cachedCells.Count - 1],ClampIndex(currentItemCount));
 
                 //Update the Pool size
                 poolSize++;
+                currentItemCount++;
             }
-
             if (IsGrid)
             {
                 _RightMostCellRow = (_RightMostCellRow - 1 + _rows) % _rows;
             }
-
             //Deactivate prototype cell if it is not a prefab(i.e it's present in scene)
             if (PrototypeCell.gameObject.scene.IsValid())
             {
                 PrototypeCell.gameObject.SetActive(false);
             }
+            return isContentForceMove;
         }
         #endregion
 
@@ -216,46 +241,90 @@ namespace PolyAndCode.UI
             int additionalColoums = 0;
 
             //Recycle until cell at left is avaiable and current item count smaller than datasource
-            while (_cellPool[leftMostCellIndex].MaxX() < _recyclableViewBounds.min.x && currentItemCount < DataSource.GetItemCount())
+            if (IsInfinite)
             {
-                if (IsGrid)
+                while (_cellPool[leftMostCellIndex].MaxX() < _recyclableViewBounds.min.x)
                 {
-                    if (++_RightMostCellRow >= _rows)
+                    if (IsGrid)
                     {
-                        n++;
-                        _RightMostCellRow = 0;
-                        posX = _cellPool[rightMostCellIndex].anchoredPosition.x + _cellWidth;
-                        additionalColoums++;
+                        if (++_RightMostCellRow >= _rows)
+                        {
+                            n++;
+                            _RightMostCellRow = 0;
+                            posX = _cellPool[rightMostCellIndex].anchoredPosition.x + _cellWidth;
+                            additionalColoums++;
+                        }
+
+                        //Move Left most cell to right
+                        posY = -_RightMostCellRow * _cellHeight;
+                        _cellPool[leftMostCellIndex].anchoredPosition = new Vector2(posX, posY);
+
+                        if (++_leftMostCellRow >= _rows)
+                        {
+                            _leftMostCellRow = 0;
+                            additionalColoums--;
+                        }
+                    }
+                    else
+                    {
+                        //Move Left most cell to right
+                        posX = _cellPool[rightMostCellIndex].anchoredPosition.x + _cellPool[rightMostCellIndex].sizeDelta.x;
+                        _cellPool[leftMostCellIndex].anchoredPosition = new Vector2(posX, _cellPool[leftMostCellIndex].anchoredPosition.y);
                     }
 
-                    //Move Left most cell to right
-                    posY = -_RightMostCellRow * _cellHeight;
-                    _cellPool[leftMostCellIndex].anchoredPosition = new Vector2(posX, posY);
+                    //Cell for row at
+                    DataSource.SetCell(_cachedCells[leftMostCellIndex], ClampIndex(currentItemCount));
 
-                    if (++_leftMostCellRow >= _rows)
-                    {
-                        _leftMostCellRow = 0;
-                        additionalColoums--;
-                    }
+                    //set new indices
+                    rightMostCellIndex = leftMostCellIndex;
+                    leftMostCellIndex = (leftMostCellIndex + 1) % _cellPool.Count;
+
+                    currentItemCount++;
+                    if (!IsGrid) n++;
                 }
-                else
-                {
-                    //Move Left most cell to right
-                    posX = _cellPool[rightMostCellIndex].anchoredPosition.x + _cellPool[rightMostCellIndex].sizeDelta.x;
-                    _cellPool[leftMostCellIndex].anchoredPosition = new Vector2(posX, _cellPool[leftMostCellIndex].anchoredPosition.y);
-                }
-
-                //Cell for row at
-                DataSource.SetCell(_cachedCells[leftMostCellIndex], currentItemCount);
-
-                //set new indices
-                rightMostCellIndex = leftMostCellIndex;
-                leftMostCellIndex = (leftMostCellIndex + 1) % _cellPool.Count;
-
-                currentItemCount++;
-                if (!IsGrid) n++;
             }
+            else
+            {
+                while (_cellPool[leftMostCellIndex].MaxX() < _recyclableViewBounds.min.x && currentItemCount < DataSource.GetItemCount())
+                {
+                    if (IsGrid)
+                    {
+                        if (++_RightMostCellRow >= _rows)
+                        {
+                            n++;
+                            _RightMostCellRow = 0;
+                            posX = _cellPool[rightMostCellIndex].anchoredPosition.x + _cellWidth;
+                            additionalColoums++;
+                        }
 
+                        //Move Left most cell to right
+                        posY = -_RightMostCellRow * _cellHeight;
+                        _cellPool[leftMostCellIndex].anchoredPosition = new Vector2(posX, posY);
+
+                        if (++_leftMostCellRow >= _rows)
+                        {
+                            _leftMostCellRow = 0;
+                            additionalColoums--;
+                        }
+                    }
+                    else
+                    {
+                        //Move Left most cell to right
+                        posX = _cellPool[rightMostCellIndex].anchoredPosition.x + _cellPool[rightMostCellIndex].sizeDelta.x;
+                        _cellPool[leftMostCellIndex].anchoredPosition = new Vector2(posX, _cellPool[leftMostCellIndex].anchoredPosition.y);
+                    }
+
+                    //Cell for row at
+                    DataSource.SetCell(_cachedCells[leftMostCellIndex], currentItemCount);
+
+                    //set new indices
+                    rightMostCellIndex = leftMostCellIndex;
+                    leftMostCellIndex = (leftMostCellIndex + 1) % _cellPool.Count;
+
+                    currentItemCount++;
+                    if (!IsGrid) n++;
+                }
+            }
             //Content size adjustment 
             if (IsGrid)
             {
@@ -287,46 +356,90 @@ namespace PolyAndCode.UI
 
             //to determine if content size needs to be updated
             int additionalColoums = 0;
-            //Recycle until cell at Right end is avaiable and current item count is greater than cellpool size
-            while (_cellPool[rightMostCellIndex].MinX() > _recyclableViewBounds.max.x && currentItemCount > _cellPool.Count)
+            if (IsInfinite)
             {
-                if (IsGrid)
+                while (_cellPool[rightMostCellIndex].MinX() > _recyclableViewBounds.max.x)
                 {
-                    if (--_leftMostCellRow < 0)
+                    if (IsGrid)
                     {
+                        if (--_leftMostCellRow < 0)
+                        {
+                            n++;
+                            _leftMostCellRow = _rows - 1;
+                            posX = _cellPool[leftMostCellIndex].anchoredPosition.x - _cellWidth;
+                            additionalColoums++;
+                        }
+
+                        //Move Right most cell to left
+                        posY = -_leftMostCellRow * _cellHeight;
+                        _cellPool[rightMostCellIndex].anchoredPosition = new Vector2(posX, posY);
+
+                        if (--_RightMostCellRow < 0)
+                        {
+                            _RightMostCellRow = _rows - 1;
+                            additionalColoums--;
+                        }
+                    }
+                    else
+                    {
+                        //Move Right most cell to left
+                        posX = _cellPool[leftMostCellIndex].anchoredPosition.x - _cellPool[leftMostCellIndex].sizeDelta.x;
+                        _cellPool[rightMostCellIndex].anchoredPosition = new Vector2(posX, _cellPool[rightMostCellIndex].anchoredPosition.y);
                         n++;
-                        _leftMostCellRow = _rows - 1;
-                        posX = _cellPool[leftMostCellIndex].anchoredPosition.x - _cellWidth;
-                        additionalColoums++;
                     }
 
-                    //Move Right most cell to left
-                    posY = -_leftMostCellRow * _cellHeight;
-                    _cellPool[rightMostCellIndex].anchoredPosition = new Vector2(posX, posY);
+                    currentItemCount--;
+                    //Cell for row at
+                    DataSource.SetCell(_cachedCells[rightMostCellIndex], ClampIndex(currentItemCount - _cellPool.Count));
 
-                    if (--_RightMostCellRow < 0)
-                    {
-                        _RightMostCellRow = _rows - 1;
-                        additionalColoums--;
-                    }
+                    //set new indices
+                    leftMostCellIndex = rightMostCellIndex;
+                    rightMostCellIndex = (rightMostCellIndex - 1 + _cellPool.Count) % _cellPool.Count;
                 }
-                else
-                {
-                    //Move Right most cell to left
-                    posX = _cellPool[leftMostCellIndex].anchoredPosition.x - _cellPool[leftMostCellIndex].sizeDelta.x;
-                    _cellPool[rightMostCellIndex].anchoredPosition = new Vector2(posX, _cellPool[rightMostCellIndex].anchoredPosition.y);
-                    n++;
-                }
-
-                currentItemCount--;
-                //Cell for row at
-                DataSource.SetCell(_cachedCells[rightMostCellIndex], currentItemCount - _cellPool.Count);
-
-                //set new indices
-                leftMostCellIndex = rightMostCellIndex;
-                rightMostCellIndex = (rightMostCellIndex - 1 + _cellPool.Count) % _cellPool.Count;
             }
+            else
+            {
+                //Recycle until cell at Right end is avaiable and current item count is greater than cellpool size
+                while (_cellPool[rightMostCellIndex].MinX() > _recyclableViewBounds.max.x && currentItemCount > _cellPool.Count)
+                {
+                    if (IsGrid)
+                    {
+                        if (--_leftMostCellRow < 0)
+                        {
+                            n++;
+                            _leftMostCellRow = _rows - 1;
+                            posX = _cellPool[leftMostCellIndex].anchoredPosition.x - _cellWidth;
+                            additionalColoums++;
+                        }
 
+                        //Move Right most cell to left
+                        posY = -_leftMostCellRow * _cellHeight;
+                        _cellPool[rightMostCellIndex].anchoredPosition = new Vector2(posX, posY);
+
+                        if (--_RightMostCellRow < 0)
+                        {
+                            _RightMostCellRow = _rows - 1;
+                            additionalColoums--;
+                        }
+                    }
+                    else
+                    {
+                        //Move Right most cell to left
+                        posX = _cellPool[leftMostCellIndex].anchoredPosition.x - _cellPool[leftMostCellIndex].sizeDelta.x;
+                        _cellPool[rightMostCellIndex].anchoredPosition = new Vector2(posX, _cellPool[rightMostCellIndex].anchoredPosition.y);
+                        n++;
+                    }
+
+                    currentItemCount--;
+                    //Cell for row at
+                    currentItemCount = ClampIndex(currentItemCount);
+                    DataSource.SetCell(_cachedCells[rightMostCellIndex], currentItemCount - _cellPool.Count);
+
+                    //set new indices
+                    leftMostCellIndex = rightMostCellIndex;
+                    rightMostCellIndex = (rightMostCellIndex - 1 + _cellPool.Count) % _cellPool.Count;
+                }
+            }
             //Content size adjustment
             if (IsGrid)
             {
@@ -368,7 +481,6 @@ namespace PolyAndCode.UI
         }
 
         #endregion
-
         #region  TESTING
         public void OnDrawGizmos()
         {

@@ -71,5 +71,9 @@ public class RecyclableScrollerDemo : MonoBehaviour, IRecyclableScrollRectDataSo
         item.ConfigureCell(_contactList[index], index);
     }
 
+    public int GetStartingIndex()
+    {
+        return 0;
+    }
     #endregion
 }

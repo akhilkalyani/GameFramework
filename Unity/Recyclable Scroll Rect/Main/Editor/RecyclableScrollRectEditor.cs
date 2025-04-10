@@ -31,7 +31,7 @@ namespace PolyAndCode.UI
         SerializedProperty _selfInitialize;
         SerializedProperty _direction;
         SerializedProperty _type;
-
+        SerializedProperty _isInfinite;
         AnimBool m_ShowElasticity;
         AnimBool m_ShowDecelerationRate;
 
@@ -54,7 +54,7 @@ namespace PolyAndCode.UI
             _selfInitialize = serializedObject.FindProperty("SelfInitialize");
             _direction = serializedObject.FindProperty("Direction");
             _type = serializedObject.FindProperty("IsGrid");
-
+            _isInfinite = serializedObject.FindProperty("IsInfinite");
             m_ShowElasticity = new AnimBool(Repaint);
             m_ShowDecelerationRate = new AnimBool(Repaint);
             SetAnimBools(true);
@@ -94,6 +94,7 @@ namespace PolyAndCode.UI
             }
 
             EditorGUILayout.PropertyField(_selfInitialize);
+            EditorGUILayout.PropertyField(_isInfinite);
             EditorGUILayout.PropertyField(m_Viewport);
             EditorGUILayout.PropertyField(m_Content);
             EditorGUILayout.PropertyField(_protoTypeCell);
@@ -122,6 +123,7 @@ namespace PolyAndCode.UI
             EditorGUILayout.Space();
 
             EditorGUILayout.PropertyField(m_OnValueChanged);
+            
 
             serializedObject.ApplyModifiedProperties();
         }

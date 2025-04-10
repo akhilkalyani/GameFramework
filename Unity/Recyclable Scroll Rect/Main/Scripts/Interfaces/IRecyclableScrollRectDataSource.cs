@@ -10,6 +10,7 @@ namespace PolyAndCode.UI
 {
     public interface IRecyclableScrollRectDataSource
     {
+        int GetStartingIndex();
         int GetItemCount();
         void SetCell(ICell cell, int index);
     }

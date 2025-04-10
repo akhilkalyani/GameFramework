@@ -39,4 +39,9 @@ public class DemoCell : MonoBehaviour, ICell
     {
         Debug.Log("Index : " + _cellIndex +  ", Name : " + _contactInfo.Name  + ", Gender : " + _contactInfo.Gender);
     }
+
+    public GameObject GetGameObject()
+    {
+        return this.gameObject;
+    }
 }
