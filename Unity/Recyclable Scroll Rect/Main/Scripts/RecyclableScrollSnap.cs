@@ -27,10 +27,10 @@ public class RecyclableScrollSnap : ScrollRect   // ✅ Make sure this extends S
         set { _segments = Math.Max(value, 2); }
         get { return _segments; }
     }
-
+    public int CurrentPageIndex { get;  set; } = 0;
     private RecyclingSystem _recyclingSystem;
     private Vector2 _prevAnchoredPos;
-
+    private int previousIndex = 0;
     protected override void Start()
     {
         vertical = true;
@@ -123,22 +123,33 @@ public class RecyclableScrollSnap : ScrollRect   // ✅ Make sure this extends S
         float cellHeight = cell.sizeDelta.y;
 
         Vector2 targetPos = content.anchoredPosition;
+        int index = 0;
 
         if (vertical)
         {
             float offset = -content.anchoredPosition.y;
-            int index = Mathf.RoundToInt(offset / cellHeight);
+            index = Mathf.RoundToInt(offset / cellHeight);
             index = Mathf.Clamp(index, 0, DataSource.GetItemCount() - 1);
             targetPos.y = -index * cellHeight;
         }
         else if (horizontal)
         {
             float offset = -content.anchoredPosition.x;
-            int index = Mathf.RoundToInt(offset / cellWidth);
+            index = Mathf.RoundToInt(offset / cellWidth);
             index = Mathf.Clamp(index, 0, DataSource.GetItemCount() - 1);
             targetPos.x = -index * cellWidth;
         }
 
+        // ✅ Store page index now
+        if (index > previousIndex)
+        {
+            CurrentPageIndex++;
+        }
+        else if (index < previousIndex)
+        {
+            CurrentPageIndex--;
+        }
+        previousIndex = index;
         StopMovement();
         onValueChanged.RemoveListener(OnValueChangedListener);
         StartCoroutine(SnapCoroutine(content.anchoredPosition, targetPos, 0.25f));
@@ -155,7 +166,12 @@ public class RecyclableScrollSnap : ScrollRect   // ✅ Make sure this extends S
         }
         content.anchoredPosition = endPos;
 
+        // // ✅ Notify listeners when snapping is done
+        // OnPageSnapped?.Invoke(CurrentPageIndex);
+        DataSource.PageChanged(CurrentPageIndex);
+
         // Resume recycling
         onValueChanged.AddListener(OnValueChangedListener);
     }
 }
+
