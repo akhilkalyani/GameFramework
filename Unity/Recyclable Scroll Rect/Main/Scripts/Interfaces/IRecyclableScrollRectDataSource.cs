@@ -13,5 +13,6 @@ namespace PolyAndCode.UI
         int GetStartingIndex();
         int GetItemCount();
         void SetCell(ICell cell, int index);
+        void PageChanged(int index);
     }
 }
