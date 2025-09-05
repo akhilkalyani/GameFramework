@@ -4,15 +4,15 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-
-/// <summary>
-/// Entry for the recycling system. Extends Unity's inbuilt ScrollRect.
-/// </summary>
-public class RecyclableScrollSnap : ScrollRect   // ✅ Make sure this extends ScrollRect
+public class RecyclableScrollSnap : ScrollRect
 {
     [HideInInspector]
     public IRecyclableScrollRectDataSource DataSource;
+    [Range(0f, 1f)]
+    public float SwipeDragThreshold = 0.5f; // 0.5 = require half a cell drag
 
+    private bool _willChangePage = false;
+    private int _pendingPageIndex = -1;
     public bool IsGrid;
     public bool IsInfinite;
     public RectTransform PrototypeCell;
@@ -27,15 +27,24 @@ public class RecyclableScrollSnap : ScrollRect   // ✅ Make sure this extends S
         set { _segments = Math.Max(value, 2); }
         get { return _segments; }
     }
-    public int CurrentPageIndex { get;  set; } = 0;
+
+    public int CurrentPageIndex { get; set; } = 0;
+
     private RecyclingSystem _recyclingSystem;
     private Vector2 _prevAnchoredPos;
     private int previousIndex = 0;
+
+    // --- 🚀 New swipe direction enum & event ---
+    public enum SwipeDirection { None, Left, Right, Up, Down }
+    private Vector2 _dragStartPos;
+    private Vector2 _dragEndPos;
+    private SwipeDirection _lastSwipe = SwipeDirection.None;
+    private Vector2 lastContentPosition;
     protected override void Start()
     {
         vertical = true;
         horizontal = false;
-
+        lastContentPosition = content.anchoredPosition;
         if (!Application.isPlaying) return;
         if (SelfInitialize) Initialize();
     }
@@ -105,13 +114,35 @@ public class RecyclableScrollSnap : ScrollRect   // ✅ Make sure this extends S
     }
 
     // ===========================
-    // 🚀 NEW SNAPPING CODE BELOW
+    // 🚀 SNAPPING + SWIPE
     // ===========================
+
+    public override void OnBeginDrag(PointerEventData eventData)
+    {
+        base.OnBeginDrag(eventData);
+        _dragStartPos = eventData.position;   // record drag start
+    }
 
     public override void OnEndDrag(PointerEventData eventData)
     {
         base.OnEndDrag(eventData);
+        _dragEndPos = eventData.position;     // record drag end
+
+        Vector2 delta = _dragEndPos - _dragStartPos;
+        _lastSwipe = GetSwipeDirection(delta);   // record drag end
+
+        // Decide swipe direction
         SnapToNearestCell();
+    }
+
+    private SwipeDirection GetSwipeDirection(Vector2 delta)
+    {
+        if (delta.magnitude < 20f) return SwipeDirection.None; // deadzone
+
+        if (Mathf.Abs(delta.x) > Mathf.Abs(delta.y))
+            return delta.x > 0 ? SwipeDirection.Right : SwipeDirection.Left;
+        else
+            return delta.y > 0 ? SwipeDirection.Up : SwipeDirection.Down;
     }
 
     private void SnapToNearestCell()
@@ -139,17 +170,6 @@ public class RecyclableScrollSnap : ScrollRect   // ✅ Make sure this extends S
             index = Mathf.Clamp(index, 0, DataSource.GetItemCount() - 1);
             targetPos.x = -index * cellWidth;
         }
-
-        // ✅ Store page index now
-        if (index > previousIndex)
-        {
-            CurrentPageIndex++;
-        }
-        else if (index < previousIndex)
-        {
-            CurrentPageIndex--;
-        }
-        previousIndex = index;
         StopMovement();
         onValueChanged.RemoveListener(OnValueChangedListener);
         StartCoroutine(SnapCoroutine(content.anchoredPosition, targetPos, 0.25f));
@@ -165,13 +185,36 @@ public class RecyclableScrollSnap : ScrollRect   // ✅ Make sure this extends S
             yield return null;
         }
         content.anchoredPosition = endPos;
+        if (lastContentPosition != endPos)
+        {
 
-        // // ✅ Notify listeners when snapping is done
-        // OnPageSnapped?.Invoke(CurrentPageIndex);
-        DataSource.PageChanged(CurrentPageIndex);
-
-        // Resume recycling
+            if (horizontal)
+            {
+                if (_lastSwipe == SwipeDirection.Left)
+                {
+                    CurrentPageIndex++;
+                }
+                else if (_lastSwipe == SwipeDirection.Right)
+                {
+                    CurrentPageIndex--;
+                }
+            }
+            else
+            {
+                // if (_lastSwipe == SwipeDirection.Left)
+                // {
+                //     CurrentPageIndex++;
+                // }
+                // else if(_lastSwipe==SwipeDirection.Right)
+                // {
+                //     CurrentPageIndex--;
+                // }
+            }
+            CurrentPageIndex = Math.Clamp(CurrentPageIndex, 0, DataSource.GetItemCount());
+            // Resume recycling
+            DataSource.PageChanged(CurrentPageIndex);
+            lastContentPosition = endPos;
+        }
         onValueChanged.AddListener(OnValueChangedListener);
     }
 }
-
