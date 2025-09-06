@@ -8,7 +8,7 @@ namespace GF
         public bool IsUpdateRequired => isUpdateRequired;
         public void Initialize()
         {
-            Console.Log(LogType.Log, "MonoService created");
+            Logger.Log(LogType.Log, "MonoService created");
         }
 
         public void RegisterListener()

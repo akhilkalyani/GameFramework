@@ -14,7 +14,7 @@ namespace GF
         public void Initialize()
         {
             IsUpdateRequired = true;
-            Console.Log(LogType.Log, "CustomServiceController created");
+            Logger.Log(LogType.Log, "CustomServiceController created");
         }
         public void RegisterListener()
         {

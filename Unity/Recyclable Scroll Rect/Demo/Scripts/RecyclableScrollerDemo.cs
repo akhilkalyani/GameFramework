@@ -75,5 +75,10 @@ public class RecyclableScrollerDemo : MonoBehaviour, IRecyclableScrollRectDataSo
     {
         return 0;
     }
+
+    public void PageChanged(int index)
+    {
+        throw new System.NotImplementedException();
+    }
     #endregion
 }

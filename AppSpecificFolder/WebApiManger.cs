@@ -9,7 +9,7 @@ namespace GF
         {
             Utils.CallEventAsync(new RaiseWebApiEvent(httpRequestType, apiRequest, (req, res, error) =>
             {
-                GF.Console.Log(LogType.HttpResponse, $"req : {res}");
+                GF.Logger.Log(LogType.HttpResponse, $"req : {res}");
                 callback?.Invoke(JsonConvert.DeserializeObject<T>(res),error);
             }));
         }

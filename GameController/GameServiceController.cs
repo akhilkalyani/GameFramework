@@ -10,7 +10,7 @@ namespace GF
         private List<IService> updateRequiredServices = new List<IService>();
         public void Initialize()
         {
-            Console.Log(LogType.Log, "GameServiceController created");
+            Logger.Log(LogType.Log, "GameServiceController created");
             foreach (var type in GetAllTypesThatImplementInterface<IService>())
             {
                 services.Add(type, (IService)Activator.CreateInstance(type));

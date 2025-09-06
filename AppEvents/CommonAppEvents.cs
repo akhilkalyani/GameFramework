@@ -5,19 +5,7 @@ using UnityEngine;
 
 namespace GF
 {
-    public class ToastEvent : GameEvent
-    {
-        private string _message;
-        public string Message { get { return _message; } }
-        private float _duration;
-        public float Duration { get { return _duration; } }
-        public ToastEvent(string message, float duration)
-        {
-            SetIsDone(false);
-            _message = message;
-            _duration = duration;
-        }
-    }
+   
     public class UnloadingEvent : GameEvent
     {
         private Action _oncomplete;
@@ -36,15 +24,7 @@ namespace GF
             _oncomplete = action;
         }
     }
-    public class LoadingScreenCreated : GameEvent
-    {
-        private DefaultLoadingUI _defaultLoadingUI;
-        public DefaultLoadingUI DefaultLoadingUI { get { return _defaultLoadingUI; } }
-        public LoadingScreenCreated(DefaultLoadingUI defaultLoadingUI)
-        {
-            _defaultLoadingUI = defaultLoadingUI;
-        }
-    }
+  
     public class SceneLoadingEvent : GameEvent
     {
         private int _sceneType;
@@ -109,29 +89,7 @@ namespace GF
     {
         public RequestType requestType;
     }
-    public class CreateToastEvent : GameEvent
-    {
-        private ITaost taostInstance;
-        public ITaost TaostInstance { get { return taostInstance; } }
-        public CreateToastEvent(ITaost taostInstance)
-        {
-            this.taostInstance = taostInstance;
-        }
-    }
-    public class ToastShowEvent : GameEvent
-    {
-        private string message;
-        private float duration;
-        public string Message { get { return message; } }
 
-        public float Duration { get { return duration; } }
-
-
-        public ToastShowEvent(string message)
-        {
-            this.message = message;
-        }
-    }
     public class RegisterCustomServiceEvent : GameEvent{
         private string nameSpaceType;
         private Assembly assembly;

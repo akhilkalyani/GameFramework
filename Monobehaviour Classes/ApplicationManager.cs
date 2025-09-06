@@ -4,7 +4,7 @@ namespace GF
     /// <summary>
     /// Responsible for creating & registering all the services used in the game. 
     /// </summary>
-    public class ApplicationManager : Singleton<ApplicationManager>
+    public class ApplicationManager : SingletonMultiThread<ApplicationManager>
     {
         private GameServiceController _gameServiceController;
         protected override void Awake()
@@ -20,13 +20,11 @@ namespace GF
             _gameServiceController.Initialize();
             _gameServiceController.RegisterListener();
         }
-        public void SpawnLoadingAndToastScreen(string loadingScreenpath)
+        public void Initialize(string loadingScreenpath)
         {
             if (!string.IsNullOrEmpty(loadingScreenpath))
             {
-                var _loadingScreenGameobject = Instantiate(Resources.Load<DefaultLoadingUI>(loadingScreenpath),transform);
-                _loadingScreenGameobject.name = $"DefaultLoadingUI";
-                Utils.CallEventAsync(new LoadingScreenCreated(_loadingScreenGameobject));
+                
             }
         }
         public void AddService<T>()

@@ -32,7 +32,7 @@ namespace GF
         public bool IsUpdateRequired => isUpdateRequired;
         public void Initialize()
         {
-            Console.Log(LogType.Log, "UnityWebService created");
+            Logger.Log(LogType.Log, "UnityWebService created");
             if (!PlayerPrefs.HasKey(BearerTokenKey))
             {
                 PlayerPrefs.SetString(BearerTokenKey, "");
