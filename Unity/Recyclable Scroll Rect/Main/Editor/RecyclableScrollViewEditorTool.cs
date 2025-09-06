@@ -6,7 +6,7 @@ namespace PolyAndCode.UI
     [ExecuteInEditMode]
     public static class RecyclableScrollViewEditorTool
     {
-        const string PrefabPath = "Game Framework/Unity/Recyclable Scroll Rect/Main/Prefab/Recyclable Scroll View.prefab";
+        const string PrefabPath = "Assets/GameFramework/Unity/Recyclable Scroll Rect/Main/Prefab/Recyclable Scroll View.prefab";
 
         [MenuItem("GameObject/UI/Recyclable Scroll View")]
         private static void CreateRecyclableScrollView()
