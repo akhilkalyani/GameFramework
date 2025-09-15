@@ -37,7 +37,7 @@ namespace Netconfig
         }
         public List<ServerEntry> serverEntries = new List<ServerEntry>();
         public int selectedConfigIndex; // Index of the selected configuration
-
+        
         // Current selected server URL
         public ServerEntry CurrentServerURL
         {
@@ -48,7 +48,14 @@ namespace Netconfig
                 return serverEntries.Count > 0 ? serverEntries[index] : null;
             }
         }
-
+        [Serializable]
+        public class ApiName
+        {
+            public RequestType requestType;
+            public string api;
+        }
+        public List<ApiName> apiList;
+        private Dictionary<RequestType, string> apiDictionary = new Dictionary<RequestType, string>();
         // Add a new server configuration
         public void AddServerEntry(string name, string baseUrl, string socketUrl)
         {
@@ -56,7 +63,13 @@ namespace Netconfig
             serverEntries.Add(newEntry);
             selectedConfigIndex = serverEntries.Count - 1; // Select the newly added configuration
         }
-
+         public void BuildApis()
+        {
+            foreach (var item in apiList)
+            {
+                apiDictionary.Add(item.requestType, item.api);
+            }
+        }
         // Remove a server configuration
         public void RemoveServerEntry(int index)
         {
@@ -68,7 +81,9 @@ namespace Netconfig
         }
         public string GetApiUrl(RequestType apiType)
         {
+            if (apiDictionary.Count == 0) BuildApis();
             return $"{CurrentServerURL.baseURL}/{apiType.ToString().ToLower()}";
         }
     }
+    public enum RequestType{}
 }
