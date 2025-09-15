@@ -17,20 +17,18 @@ namespace Netconfig
         {
             serverEntriesProperty = serializedObject.FindProperty("serverEntries");
             selectedConfigIndexProperty = serializedObject.FindProperty("selectedConfigIndex");
+            apiListProperty = serializedObject.FindProperty("apiList");
         }
 
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
-
-            // Display existing configurations in a dropdown
             DrawServerConfigDropdown();
-
             EditorGUILayout.Space();
-
-            // Add new configuration
             DrawAddServerEntry();
-
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("API List", EditorStyles.boldLabel);
+            EditorGUILayout.PropertyField(apiListProperty, new GUIContent("APIs"), true);
             serializedObject.ApplyModifiedProperties();
         }
 
@@ -78,16 +76,30 @@ namespace Netconfig
             // Add button with a specific width and height
             if (GUILayout.Button("Add", GUILayout.Width(150), GUILayout.Height(40)))
             {
-                ServerConfig.Instance.AddServerEntry(newConfigName, newBaseURL, newSocketURL);
+                // Record undo for editor integration
+                Undo.RecordObject(target, "Add Server Entry");
 
-                // Clear the entered values after adding a new entry
+                (target as ServerConfig).AddServerEntry(newConfigName, newBaseURL, newSocketURL);
+
+                // Mark the object dirty so Unity knows it changed
+                EditorUtility.SetDirty(target);
+                serializedObject.Update();
+                serializedObject.ApplyModifiedProperties();
+
+                // Clear EditorPrefs
                 EditorPrefs.SetString(ConfigNameKey, "");
                 EditorPrefs.SetString(BaseURLKey, "");
                 EditorPrefs.SetString(SocketURLKey, "");
             }
             if (GUILayout.Button("Remove Current Config",GUILayout.Width(150), GUILayout.Height(40)))
             {
+                   Undo.RecordObject(target, "Remove Server Entry");
+
                 (target as ServerConfig).RemoveServerEntry(selectedConfigIndexProperty.intValue);
+
+                EditorUtility.SetDirty(target);
+                serializedObject.Update();
+                serializedObject.ApplyModifiedProperties();
             }
             EditorGUILayout.EndHorizontal();
 
