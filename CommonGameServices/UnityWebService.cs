@@ -1,13 +1,14 @@
-using System.Net.Mime;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
 using Netconfig;
 using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.Networking;
+using System.Text;
+using ToolCityGame.Assets.Scripts.API;
+using toolcity.DataManager;
 
 namespace GF
 {
@@ -27,7 +28,6 @@ namespace GF
         private int imageMaxRequest = 3;
         private float maxWaitDuration = 10f;
         private Queue<Request> imageRequestQueue = new Queue<Request>();
-        private string BearerToken;
         private string BearerTokenKey = "BearerToken";
         public bool IsUpdateRequired => isUpdateRequired;
         public void Initialize()
@@ -48,82 +48,43 @@ namespace GF
         public void RegisterListener()
         {
             EventManager.Instance.AddListener<DownloadImageEvent>(DownloadImage);
-            EventManager.Instance.AddListener<DownlaodAudioEvent>(DownloadAudio);
-            EventManager.Instance.AddListener<RaiseWebApiEvent>(OnApiRequest);
-        }
-
-        private async void DownloadAudio(DownlaodAudioEvent e)
-        {
-            string url = e.Url;
-
-            if (string.IsNullOrEmpty(url))
-            {
-                Debug.LogError("Image url is empty or null");
-                return;
-            }
-            bool hascahed = false;
-            string[] str = url.Split('/');
-
-            if (File.Exists(Path.Combine(cashedImageUrl, str[str.Length - 1])))
-            {
-                url = "file://" + Path.Combine(cashedImageUrl, str[str.Length - 1]);
-                hascahed = true;
-            }
-            Task task = DownloadAudioAsync(url, hascahed, e.Callback, e.ProgressCallback);
-            await task;
-        }
-        private async Task DownloadAudioAsync(string url, bool islocal, Action<AudioClip> calback, Action<float> progressCallback)
-        {
-            using (UnityWebRequest request = UnityWebRequestMultimedia.GetAudioClip(url, AudioType.MPEG))
-            {
-                // Send the request and wait for the response
-                var asyncOperation = request.SendWebRequest();
-                while (!asyncOperation.isDone)
-                {
-                    await Task.Yield();
-                    progressCallback?.Invoke(request.downloadProgress);
-                }
-                // Check for errors
-                if (request.result != UnityWebRequest.Result.Success)
-                {
-                    Debug.Log(request.error);
-                    calback?.Invoke(null);
-                }
-                else
-                {
-                    if (!islocal)
-                    {
-                        string[] fileName = url.Split('/');
-                        File.WriteAllBytes(Path.Combine(Application.persistentDataPath, fileName[fileName.Length - 1]), request.downloadHandler.data);
-                    }
-                    calback?.Invoke(DownloadHandlerAudioClip.GetContent(request));
-                }
-            }
-        }
-        private void OnApiRequest(RaiseWebApiEvent e)
-        {
-            switch (e.HttpRequestType)
-            {
-                case HttpRequestType.Post:
-                    HTTPPost(ServerConfig.Instance.GetApiUrl(e.ApiRequest.requestType),
-                        e.ApiRequest.requestType.ToString(),
-                        JsonConvert.SerializeObject(e.ApiRequest),
-                        e._responseCallback);
-                    break;
-                case HttpRequestType.Get:
-                    HTTPGet(ServerConfig.Instance.GetApiUrl(e.ApiRequest.requestType),
-                        e.ApiRequest.requestType.ToString(),
-                        e._responseCallback);
-                    break;
-            }
-
+            EventManager.Instance.AddListener<ApiEvent>(OnApiRequest);
         }
 
         public void RemoveListener()
         {
             EventManager.Instance.RemoveListener<DownloadImageEvent>(DownloadImage);
-            EventManager.Instance.RemoveListener<DownlaodAudioEvent>(DownloadAudio);
-            EventManager.Instance.RemoveListener<RaiseWebApiEvent>(OnApiRequest);
+            EventManager.Instance.RemoveListener<ApiEvent>(OnApiRequest);
+        }
+
+        private void OnApiRequest(ApiEvent e)
+        {
+            switch (e.HttpRequestType)
+            {
+                case HttpRequestType.POST:
+                    HTTPPost(e.url,
+                        e.Request.requestType,
+                        e.Request.requestData,
+                        e.ResponseCallback);
+                    break;
+                case HttpRequestType.GET:
+                    HTTPGet(e.url,
+                        e.Request.requestType,
+                        e.ResponseCallback);
+                    break;
+                case HttpRequestType.PUT:
+                    HTTPPut(e.url,
+                    e.Request.requestType,
+                    e.Request.requestData,
+                    e.ResponseCallback);
+                    break;
+                case HttpRequestType.DELETE:
+                    HTTPDelete(e.url,
+                        e.Request.requestType,
+                        e.Request.requestData,
+                        e.ResponseCallback);
+                    break;
+            }
         }
         /// <summary>
         /// Use this function for downloading images
@@ -150,34 +111,6 @@ namespace GF
             Utils.CallEventAsync(new CoroutineEvent(DownloadImageRoutine(url, hascahed, downloadImageEvent.Action)));
             // Task task = DownloadImageAsync(url, hascahed, downloadImageEvent.Action);
             // await task;
-        }
-        private async Task DownloadImageAsync(string url, bool islocal, Action<Texture2D> image)
-        {
-            using (UnityWebRequest request = UnityWebRequestTexture.GetTexture(url))
-            {
-                // Send the request and wait for the response
-                var asyncOperation = request.SendWebRequest();
-
-                while (!asyncOperation.isDone)
-                {
-                    await Task.Yield();
-                }
-                // Check for errors
-                if (request.result != UnityWebRequest.Result.Success)
-                {
-                    Debug.Log(request.error);
-                    image?.Invoke(null);
-                }
-                else
-                {
-                    if (!islocal)
-                    {
-                        string[] fileName = url.Split('/');
-                        File.WriteAllBytes(Path.Combine(Application.persistentDataPath, fileName[fileName.Length - 1]), request.downloadHandler.data);
-                    }
-                    image?.Invoke(DownloadHandlerTexture.GetContent(request));
-                }
-            }
         }
         private IEnumerator DownloadImageRoutine(string url, bool islocal, Action<Texture2D> image)
         {
@@ -226,37 +159,6 @@ namespace GF
             }
 
         }
-        /// <summary>
-        /// It used for downloading any binary file from server using desire url.
-        /// </summary>
-        /// <param name="url"></param>
-        /// <param name="requestType"></param>
-        /// <param name="data"></param>
-        /// <param name="OnDownloadCompleteCallback"></param>
-        /// <param name="OnProgressCallback"></param>
-        protected void DownloadFile(string url, string requestType, string data, Action<string, byte[], string> OnDownloadCompleteCallback, Action<float, string> OnProgressCallback)
-        {
-            Utils.CallEventAsync(new CoroutineEvent(DownloadFileRequest(url, requestType, data, OnDownloadCompleteCallback, OnProgressCallback)));
-        }
-
-        private IEnumerator DownloadFileRequest(string url, string requestType, string data, Action<string, byte[], string> onDownloadCompleteCallback, Action<float, string> onProgressCallback)
-        {
-            using (UnityWebRequest webRequest = UnityWebRequest.Get(url))
-            {
-                if (onProgressCallback != null)
-                    onProgressCallback(webRequest.downloadProgress, requestType);
-                webRequest.SendWebRequest();
-                //Request and wait for the desire page
-                while (webRequest.downloadProgress < 1)
-                {
-                    onProgressCallback(webRequest.downloadProgress, requestType);
-                    yield return new WaitForSeconds(0.03f);
-                }
-                onProgressCallback(1f, requestType);
-                if (onDownloadCompleteCallback != null)
-                    onDownloadCompleteCallback(requestType, (webRequest.isDone ? webRequest.downloadHandler.data : null), webRequest.error);
-            }
-        }
 
         /// <summary>
         /// It Post data to server using url.
@@ -267,30 +169,46 @@ namespace GF
         /// <param name="OnPostCompleteCalback"></param>
         /// <param name="OnProgressCallback"></param>
 
-        protected void HTTPPost(string url, string requestType, string data, Action<string, string, string> OnPostCompleteCalback)
+        protected void HTTPPost(string url, RequestType requestType, string data, Action<IResponse> OnPostCompleteCalback)
         {
             Utils.CallEventAsync(new CoroutineEvent(PostRequest(url, requestType, data, OnPostCompleteCalback)));
         }
 
-
-        private IEnumerator PostRequest(string url, string requestType, string data, Action<string, string, string> onPostCompleteCalback)
+        private IEnumerator PostRequest(string url, RequestType requestType, string data, Action<IResponse> onPostCompleteCalback)
         {
-            using (var request = UnityWebRequest.PostWwwForm(url, data))
+            Logger.Log(LogType.HttpRequest, $"[Request-POST]-{requestType}-data-{data}");
+            // Convert JSON string to bytes
+            using (UnityWebRequest request = new UnityWebRequest(url, UnityWebRequest.kHttpVerbPOST))
             {
+                if (!string.IsNullOrEmpty(data))
+                {
+                    byte[] bodyRaw = Encoding.UTF8.GetBytes(data);
+                    // Attach upload handler with JSON body
+                    request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+                }
+
+                // Attach download handler
+                request.downloadHandler = new DownloadHandlerBuffer();
+
+                // Headers
                 request.SetRequestHeader("Content-Type", "application/json");
-                request.SetRequestHeader("Authorization", "Bearer " + BearerToken);
+
+                if (PlayerPrefs.HasKey("BearerToken") && !string.IsNullOrEmpty(PlayerPrefs.GetString("BearerToken")))
+                    request.SetRequestHeader("Authorization", "Bearer " + PlayerPrefs.GetString("BearerToken"));
+
+                // Send request
                 yield return request.SendWebRequest();
 
-                if (request.result != UnityWebRequest.Result.Success)
-                    Debug.Log("Network error has occured: " + request.GetResponseHeader(""));
+                if (request.result == UnityWebRequest.Result.Success)
+                {
+                    Logger.Log(LogType.HttpResponse, $"[Response]-{requestType}-data-{request.downloadHandler.text}");
+                    IResponse response = (IResponse)JsonConvert.DeserializeObject(request.downloadHandler.text, GetTypeFromRequestType(requestType));
+                    onPostCompleteCalback?.Invoke(response);
+                }
                 else
                 {
-                    byte[] results = request.downloadHandler.data;
-                    Debug.Log("Success " + request.downloadHandler.text);
-                    if (onPostCompleteCalback != null)
-                    {
-                        onPostCompleteCalback(requestType, (request.isDone ? request.downloadHandler.text : null), request.error);
-                    }
+                    Logger.Log(LogType.Error, $"[Response]-{requestType}-data-{request.error}");
+                    onPostCompleteCalback?.Invoke(new Response(request.responseCode, request.error));
                 }
             }
 
@@ -303,26 +221,155 @@ namespace GF
         /// <param name="requestType"></param>
         /// <param name="OnGetCompleteCallback"></param>
         /// <param name="progressCallback"></param>
-        protected void HTTPGet(string url, string requestType, Action<string, string, string> OnGetCompleteCallback)
+        protected void HTTPGet(string url, RequestType requestType, Action<IResponse> OnGetCompleteCallback)
         {
             Utils.CallEventAsync(new CoroutineEvent(GetRequest(url, requestType, OnGetCompleteCallback)));
         }
 
-        private IEnumerator GetRequest(string url, string requestType, Action<string, string, string> onGetCompleteCallback)
+        private IEnumerator GetRequest(string url, RequestType requestType, Action<IResponse> onGetCompleteCallback)
         {
-            using (UnityWebRequest webRequest = UnityWebRequest.Get(url))
+            Logger.Log(LogType.HttpRequest, $"[Request-GET]-{requestType}");
+            using (UnityWebRequest request = UnityWebRequest.Get(url))
             {
-                yield return webRequest.SendWebRequest();
+                // Headers
+                request.SetRequestHeader("Content-Type", "application/json");
+                request.SetRequestHeader("Authorization", "Bearer " + PlayerPrefs.GetString("BearerToken"));
 
-                if (webRequest.result == UnityWebRequest.Result.Success)
+                // Send request
+                yield return request.SendWebRequest();
+
+                if (request.result == UnityWebRequest.Result.Success)
                 {
-                    if (onGetCompleteCallback != null)
-                        onGetCompleteCallback(requestType, (webRequest.isDone ? webRequest.downloadHandler.text : null), webRequest.error);
+                    Logger.Log(LogType.HttpResponse, $"[Response]-{requestType}-data-{request.downloadHandler.text}");
+                    IResponse response = (IResponse)JsonConvert.DeserializeObject(request.downloadHandler.text, GetTypeFromRequestType(requestType));
+                    onGetCompleteCallback?.Invoke(response);
                 }
                 else
                 {
-                    Debug.LogError($"Error occured {webRequest.result}");
+                    Logger.Log(LogType.Error, $"[Response]-{requestType}-data-{request.error}");
+                    onGetCompleteCallback?.Invoke(new Response(request.responseCode, request.error));
                 }
+            }
+        }
+
+        /// <summary>
+        /// PUT REQUEST
+        /// </summary>
+        /// <param name="url"></param>
+        /// <param name="requestType"></param>
+        /// <param name="data"></param>
+        /// <param name="OnPutCompleteCallback"></param>
+        protected void HTTPPut(string url, RequestType requestType, string data, Action<IResponse> OnPutCompleteCallback)
+        {
+            Utils.CallEventAsync(new CoroutineEvent(PutRequest(url, requestType, data, OnPutCompleteCallback)));
+        }
+        private IEnumerator PutRequest(string url, RequestType requestType, string data, Action<IResponse> onPostCompleteCalback)
+        {
+            Logger.Log(LogType.HttpRequest, $"[Request-POST]-{requestType}-data-{data}");
+            // Convert JSON string to bytes
+            using (UnityWebRequest request = new UnityWebRequest(url, UnityWebRequest.kHttpVerbPUT))
+            {
+                if (!string.IsNullOrEmpty(data))
+                {
+                    byte[] bodyRaw = Encoding.UTF8.GetBytes(data);
+                    // Attach upload handler with JSON body
+                    request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+                }
+
+                // Attach download handler
+                request.downloadHandler = new DownloadHandlerBuffer();
+
+                // Headers
+                request.SetRequestHeader("Content-Type", "application/json");
+
+                if (PlayerPrefs.HasKey("BearerToken") && !string.IsNullOrEmpty(PlayerPrefs.GetString("BearerToken")))
+                    request.SetRequestHeader("Authorization", "Bearer " + PlayerPrefs.GetString("BearerToken"));
+
+                // Send request
+                yield return request.SendWebRequest();
+
+                if (request.result == UnityWebRequest.Result.Success)
+                {
+                    Logger.Log(LogType.HttpResponse, $"[Response]-{requestType}-data-{request.downloadHandler.text}");
+                    IResponse response = (IResponse)JsonConvert.DeserializeObject(request.downloadHandler.text, GetTypeFromRequestType(requestType));
+                    onPostCompleteCalback?.Invoke(response);
+                }
+                else
+                {
+                    Logger.Log(LogType.Error, $"[Response]-{requestType}-data-{request.error}");
+                    onPostCompleteCalback?.Invoke(new Response(request.responseCode, request.error));
+                }
+            }
+        }
+        /// <summary>
+        /// DELETE REQUEST
+        /// </summary>
+        /// <param name="url"></param>
+        /// <param name="requestType"></param>
+        /// <param name="data"></param>
+        /// <param name="OnPutCompleteCallback"></param>
+        protected void HTTPDelete(string url, RequestType requestType, string data, Action<IResponse> OnPutCompleteCallback)
+        {
+            Utils.CallEventAsync(new CoroutineEvent(DeleteRequest(url, requestType, data, OnPutCompleteCallback)));
+        }
+        private IEnumerator DeleteRequest(string url, RequestType requestType, string data, Action<IResponse> onPostCompleteCalback)
+        {
+            Logger.Log(LogType.HttpRequest, $"[Request-POST]-{requestType}-data-{data}");
+            // Convert JSON string to bytes
+            using (UnityWebRequest request = new UnityWebRequest(url, UnityWebRequest.kHttpVerbDELETE))
+            {
+                if (!string.IsNullOrEmpty(data))
+                {
+                    byte[] bodyRaw = Encoding.UTF8.GetBytes(data);
+                    // Attach upload handler with JSON body
+                    request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+                }
+
+                // Attach download handler
+                request.downloadHandler = new DownloadHandlerBuffer();
+
+                // Headers
+                request.SetRequestHeader("Content-Type", "application/json");
+
+                if (PlayerPrefs.HasKey("BearerToken") && !string.IsNullOrEmpty(PlayerPrefs.GetString("BearerToken")))
+                    request.SetRequestHeader("Authorization", "Bearer " + PlayerPrefs.GetString("BearerToken"));
+
+                // Send request
+                yield return request.SendWebRequest();
+
+                if (request.result == UnityWebRequest.Result.Success)
+                {
+                    Logger.Log(LogType.HttpResponse, $"[Response]-{requestType}-data-{request.downloadHandler.text}");
+                    IResponse response = (IResponse)JsonConvert.DeserializeObject(request.downloadHandler.text, GetTypeFromRequestType(requestType));
+                    onPostCompleteCalback?.Invoke(response);
+                }
+                else
+                {
+                    Logger.Log(LogType.Error, $"[Response]-{requestType}-data-{request.error}");
+                    onPostCompleteCalback?.Invoke(new Response(request.responseCode, request.error));
+                }
+            }
+        }
+        private Type GetTypeFromRequestType(RequestType requestType)
+        {
+            switch (requestType)
+            {
+                case RequestType.Login:
+                case RequestType.SilentLogin:
+                    return typeof(LoginResponse);
+                case RequestType.GetFriends:
+                case RequestType.GetWeekLeaderboard:
+                case RequestType.GetGlobalLeaderboard:
+                    return typeof(LeaderboardResponse);
+                case RequestType.UpdateScore:
+                case RequestType.UpdateScoreWeek:
+                case RequestType.UpdateCoin:
+                case RequestType.UpdateStar:
+                case RequestType.DeleteAccount:
+                case RequestType.Logout:
+                    return typeof(Response);
+                default:
+                    return typeof(Response);
             }
         }
         public void Update()

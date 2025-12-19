@@ -1,52 +1,39 @@
 using System;
 using System.Collections;
 using System.Reflection;
+using Netconfig;
+using toolcity.DataManager;
+using ToolCityGame.Assets.Scripts.API;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace GF
 {
-   
-    public class UnloadingEvent : GameEvent
+    public class YesNoPopupEvent : GameEvent
     {
-        private Action _oncomplete;
-        public Action OnComplete { get { return _oncomplete; } }
-        public UnloadingEvent(Action action)
+        public Action yesAction;
+        public Action noAction;
+        public string title;
+        public string info;
+        public YesNoPopupEvent(string title, string info, Action yes, Action no)
         {
-            _oncomplete = action;
+            this.yesAction = yes;
+            this.noAction = no;
+            this.title = title;
+            this.info = info;
         }
     }
-    public class LoadingEvent : GameEvent
+
+    public class OkPopupEvent : GameEvent
     {
-        private Action _oncomplete;
-        public Action OnComplete { get { return _oncomplete; } }
-        public LoadingEvent(Action action)
+        public Action okAction;
+        public string title;
+        public string info;
+        public OkPopupEvent(string title, string info, Action ok)
         {
-            _oncomplete = action;
-        }
-    }
-  
-    public class SceneLoadingEvent : GameEvent
-    {
-        private int _sceneType;
-        public int SceneType { get { return _sceneType; } }
-        public SceneLoadingEvent(int scene)
-        {
-            _sceneType = scene;
-        }
-    }
-    public class DownlaodAudioEvent : GameEvent
-    {
-        private string _url;
-        private Action<AudioClip> _callback;
-        public string Url { get => _url; }
-        private Action<float> _progressCallback;
-        public Action<AudioClip> Callback { get => _callback; }
-        public Action<float> ProgressCallback { get => _progressCallback; }
-        public DownlaodAudioEvent(string url, Action<AudioClip> callback, Action<float> progressCallback)
-        {
-            _url = url;
-            _callback = callback;
-            _progressCallback = progressCallback;
+            this.title = title;
+            this.info = info;
+            this.okAction = ok;
         }
     }
     public class DownloadImageEvent : GameEvent
@@ -70,34 +57,46 @@ namespace GF
             _enumerator = enumerator;
         }
     }
-    public class RaiseWebApiEvent : GameEvent
+    public class ApiEvent : GameEvent
     {
-        private HttpRequestType _httpRequestType;
-        private WebApiRequest _apiRequest;
-        public WebApiRequest ApiRequest { get { return _apiRequest; } }
-        public HttpRequestType HttpRequestType { get { return _httpRequestType; } }
-        public Action<string, string, string> _responseCallback;
-        public RaiseWebApiEvent(HttpRequestType httpRequestType, WebApiRequest apiRequest, Action<string, string, string> responseCallback)
+        public Request Request;
+        public HttpRequestType HttpRequestType;
+        public string url;
+        public Action<IResponse> ResponseCallback;
+        public ApiEvent(Request apiRequest, Action<IResponse> responseCallback)
         {
-            _apiRequest = apiRequest;
-            _responseCallback = responseCallback;
-            _httpRequestType = httpRequestType;
+            Request = apiRequest;
+            ResponseCallback = responseCallback;
+            url = BuildUrl(apiRequest.requestType);
+        }
+        private string BuildUrl(RequestType e)
+        {
+            var result = ServerConfig.Instance.GetApiUrl(e);
+            string url = result.Item1;
+            HttpRequestType = result.Item2;
+            switch (e)
+            {
+                case RequestType.GetFriends:
+                case RequestType.GetGlobalLeaderboard:
+                case RequestType.GetWeekLeaderboard:
+                case RequestType.Logout:
+                case RequestType.DeleteAccount:
+                    return url + UserDataManager.Instance.UserID;
+            }
+            return url;
         }
     }
-    [System.Serializable]
-    public class WebApiRequest
-    {
-        public RequestType requestType;
-    }
 
-    public class RegisterCustomServiceEvent : GameEvent{
-        private string nameSpaceType;
+    public class RegisterCustomServiceEvent : GameEvent
+    {
+        public string NameSpaceType;
         private Assembly assembly;
-        public string NameSpaceType=>nameSpaceType;
-        public Assembly Assembly=>assembly;
-        public RegisterCustomServiceEvent(string nameSpaceType,Assembly assembly){
-            this.nameSpaceType=nameSpaceType;
-            this.assembly=assembly;
+        public Assembly Assembly => string.IsNullOrEmpty(assemblyName) ? Assembly.GetExecutingAssembly() : Assembly.Load(assemblyName);
+        public string assemblyName;
+        public RegisterCustomServiceEvent(string nameSpaceType, string assembly)
+        {
+            this.NameSpaceType = nameSpaceType;
+            this.assemblyName = assembly;
         }
     }
 }
