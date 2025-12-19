@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using GF;
+using System;
 
 namespace Netconfig
 {
@@ -23,7 +24,7 @@ namespace Netconfig
                 if (instance == null)
                 {
                     // If the instance is null, try to load from resources
-                    instance = Resources.Load<ServerConfig>("NetConfig/ServerConfig");
+                    instance = Resources.Load<ServerConfig>("ServerConfig");
 
                     // If still null, create a new instance
                     if (instance == null)
@@ -37,7 +38,7 @@ namespace Netconfig
         }
         public List<ServerEntry> serverEntries = new List<ServerEntry>();
         public int selectedConfigIndex; // Index of the selected configuration
-        
+
         // Current selected server URL
         public ServerEntry CurrentServerURL
         {
@@ -52,10 +53,11 @@ namespace Netconfig
         public class ApiName
         {
             public RequestType requestType;
+            public HttpRequestType httpRequestType;
             public string api;
         }
         public List<ApiName> apiList;
-        private Dictionary<RequestType, string> apiDictionary = new Dictionary<RequestType, string>();
+        private Dictionary<RequestType, ApiName> apiDictionary = new Dictionary<RequestType, ApiName>();
         // Add a new server configuration
         public void AddServerEntry(string name, string baseUrl, string socketUrl)
         {
@@ -63,11 +65,11 @@ namespace Netconfig
             serverEntries.Add(newEntry);
             selectedConfigIndex = serverEntries.Count - 1; // Select the newly added configuration
         }
-         public void BuildApis()
+        public void BuildApis()
         {
             foreach (var item in apiList)
             {
-                apiDictionary.Add(item.requestType, item.api);
+                apiDictionary.Add(item.requestType, item);
             }
         }
         // Remove a server configuration
@@ -79,11 +81,24 @@ namespace Netconfig
                 selectedConfigIndex = Mathf.Clamp(selectedConfigIndex, 0, serverEntries.Count - 1); // Adjust the selected index
             }
         }
-        public string GetApiUrl(RequestType apiType)
+        public (string, HttpRequestType) GetApiUrl(RequestType apiType)
         {
             if (apiDictionary.Count == 0) BuildApis();
-            return $"{CurrentServerURL.baseURL}/{apiType.ToString().ToLower()}";
+            return ($"{CurrentServerURL.baseURL}/{apiDictionary[apiType].api}", apiDictionary[apiType].httpRequestType);
         }
     }
-    public enum RequestType{}
+    public enum RequestType
+    {
+        Login,
+        SilentLogin,
+        UpdateScore,
+        GetGlobalLeaderboard,
+        GetFriends,
+        UpdateScoreWeek,
+        GetWeekLeaderboard,
+        UpdateStar,
+        UpdateCoin,
+        Logout,
+        DeleteAccount
+    }
 }

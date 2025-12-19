@@ -1,0 +1,236 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1754566507179232
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4468848661959634}
+  - component: {fileID: 114469100572762340}
+  - component: {fileID: 114962611060514322}
+  - component: {fileID: 3115196406082606283}
+  m_Layer: 0
+  m_Name: Purchaser
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4468848661959634
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1754566507179232}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1301.671, y: 527.47534, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &114469100572762340
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1754566507179232}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8d3f1d65a6a59764da42045903cc9599, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  consumable:
+  - name: 5000 coins
+    thingImage: {fileID: 21300000, guid: 44f50b831bf44ff4999e28d21b5f4eae, type: 3}
+    thingLabelImage: {fileID: 21300000, guid: 1986fa949c4b69748a3c3aa179d657b8, type: 3}
+    thingCount: 5000
+    thingCountOld: 2500
+    thingPrice: 2.99
+    currency: $
+    kProductID: coin_2500
+    showInShop: 1
+    clickEvent:
+      m_PersistentCalls:
+        m_Calls: []
+    shopType: 1
+    PurchaseEvent:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 3115196406082606283}
+          m_MethodName: AddCoins
+          m_Mode: 3
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 5000
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - name: 11 000 coins
+    thingImage: {fileID: 21300000, guid: afbb17eb79773b94ab7fd42aebd6f57e, type: 3}
+    thingLabelImage: {fileID: 0}
+    thingCount: 11000
+    thingCountOld: 0
+    thingPrice: 4.99
+    currency: $
+    kProductID: coin_11000
+    showInShop: 1
+    clickEvent:
+      m_PersistentCalls:
+        m_Calls: []
+    shopType: 1
+    PurchaseEvent:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 3115196406082606283}
+          m_MethodName: AddCoins
+          m_Mode: 3
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 11000
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - name: 27000 coins
+    thingImage: {fileID: 21300000, guid: c14a413b2a5274e458ca912103cd7573, type: 3}
+    thingLabelImage: {fileID: 21300000, guid: a79346a06cdebaa48a6ca3a8d2dced12, type: 3}
+    thingCount: 27000
+    thingCountOld: 25000
+    thingPrice: 14.99
+    currency: $
+    kProductID: coin_25000
+    showInShop: 1
+    clickEvent:
+      m_PersistentCalls:
+        m_Calls: []
+    shopType: 1
+    PurchaseEvent:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 3115196406082606283}
+          m_MethodName: AddCoins
+          m_Mode: 3
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 27500
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - name: 110000 coins
+    thingImage: {fileID: 21300000, guid: 4c21ecc70cbbefc40929969d5351f4d5, type: 3}
+    thingLabelImage: {fileID: 21300000, guid: fee3fbd577385cc4f914c6bde7127d55, type: 3}
+    thingCount: 110000
+    thingCountOld: 100000
+    thingPrice: 29.99
+    currency: $
+    kProductID: coin_100000
+    showInShop: 1
+    clickEvent:
+      m_PersistentCalls:
+        m_Calls: []
+    shopType: 1
+    PurchaseEvent:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 3115196406082606283}
+          m_MethodName: AddCoins
+          m_Mode: 3
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 110000
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - name: 110000 coins
+    thingImage: {fileID: 21300000, guid: 047d72176eb70d24eb0a1374c2f9b5ab, type: 3}
+    thingLabelImage: {fileID: 0}
+    thingCount: 110000
+    thingCountOld: 100000
+    thingPrice: 14.99
+    currency: $
+    kProductID: coindeal_100000
+    showInShop: 1
+    clickEvent:
+      m_PersistentCalls:
+        m_Calls: []
+    shopType: 2
+    PurchaseEvent:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 3115196406082606283}
+          m_MethodName: AddCoins
+          m_Mode: 3
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 110000
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - name: 27000 coins
+    thingImage: {fileID: 21300000, guid: 047d72176eb70d24eb0a1374c2f9b5ab, type: 3}
+    thingLabelImage: {fileID: 0}
+    thingCount: 27000
+    thingCountOld: 25000
+    thingPrice: 14.99
+    currency: $
+    kProductID: coindeal_27000
+    showInShop: 1
+    clickEvent:
+      m_PersistentCalls:
+        m_Calls: []
+    shopType: 2
+    PurchaseEvent:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 3115196406082606283}
+          m_MethodName: AddCoins
+          m_Mode: 3
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 27000
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  nonConsumable: []
+  subscriptions: []
+--- !u!114 &114962611060514322
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1754566507179232}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 064cc09f32b3db44c947fa14fe0810c1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &3115196406082606283
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1754566507179232}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67cc00221d4c90b4cb579cac12c11114, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
