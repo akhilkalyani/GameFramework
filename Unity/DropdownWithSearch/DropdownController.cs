@@ -1,5 +1,3 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using PolyAndCode.UI;
@@ -15,7 +13,7 @@ namespace GF
         private List<(string, Sprite)> dropdownList = new List<(string, Sprite)>();
         private List<(string, Sprite)> searchDropDownList = new List<(string, Sprite)>();
         public DropDownItem dropDownItem;
-        private int lastSeenIndex = 0;
+        public int LastSeenIndex { get; private set; }
         private DropDownSearchTrie searchTrie;
         void Awake()
         {
@@ -58,11 +56,11 @@ namespace GF
 
         public int GetStartingIndex()
         {
-            if (lastSeenIndex >= searchDropDownList.Count || lastSeenIndex <= 0)
+            if (LastSeenIndex >= searchDropDownList.Count || LastSeenIndex <= 0)
             {
-                lastSeenIndex = 0;
+                LastSeenIndex = 0;
             }
-            return lastSeenIndex;
+            return LastSeenIndex;
         }
 
         public void PageChanged(int index)
@@ -78,7 +76,7 @@ namespace GF
 
         private void OnSelectItem(int index)
         {
-            lastSeenIndex = GetGlobalIndex(index);
+            LastSeenIndex = GetGlobalIndex(index);
             searchTrie.Clear();
             dropDownItem.SetItem(searchDropDownList[index]);
             gameObject.SetActive(false);
