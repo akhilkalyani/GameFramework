@@ -12,7 +12,7 @@ namespace GF
         private static float scaleUp = 1;
         private static float duration = 0.1f;
         private static GameObject lastObj = null;
-        public static void AddclickEffect(this Button ob, ScrollRect scrollView = null, Action onClick = null)
+        public static void AddListener(this Button ob, ScrollRect scrollView = null, Action onClick = null)
         {
             bool draging = false;
             EventTrigger trigger = ob.GetComponent<EventTrigger>();
@@ -45,8 +45,18 @@ namespace GF
                         lastObj.transform.DOKill();
                     ob.transform.DOKill();
                     ob.transform.DOScale(new Vector3(scaleUp, scaleUp, scaleUp), duration);
-                    if (e.selectedObject == ob && !draging && ob && ob.interactable)
-                        onClick?.Invoke();
+                    if (!draging && ob && ob.interactable)
+                    {
+                        var ped = e as PointerEventData;
+                        var results = new System.Collections.Generic.List<RaycastResult>();
+                        EventSystem.current.RaycastAll(ped, results);
+
+                        // check if button is still under pointer
+                        bool isOverButton = results.Exists(r => r.gameObject == ob.gameObject);
+
+                        if (isOverButton || e.selectedObject == ob.gameObject)
+                            onClick?.Invoke();
+                    }
                 });
                 trigger.triggers.Add(onPointerup);
 
@@ -106,5 +116,22 @@ namespace GF
             }
             lastObj = ob.gameObject;
         }
+        public static void RemoveListener(this Button ob)
+        {
+            EventTrigger trigger = ob.GetComponent<EventTrigger>();
+            if (trigger == null) return;
+
+            // Clear stored last object
+            if (lastObj == ob.gameObject)
+                lastObj = null;
+
+            trigger.triggers.Clear();
+            GameObject.Destroy(trigger);
+
+            // Reset scale just in case animation stopped midway
+            ob.transform.DOKill();
+            ob.transform.localScale = Vector3.one;
+        }
+
     }
 }

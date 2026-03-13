@@ -1,5 +1,4 @@
 namespace GF
 {
-    public enum RequestType { }
-    public enum HttpRequestType { Get, Post }
+    public enum HttpRequestType { GET,POST,PUT,DELETE }
 }

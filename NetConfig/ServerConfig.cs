@@ -1,7 +1,9 @@
 using UnityEngine;
 using System.Collections.Generic;
-using GF;
 using System;
+using GF;
+using Newtonsoft.Json;
+using Ferry_boat.Assets.Scripts.Web;
 
 namespace Netconfig
 {
@@ -15,6 +17,18 @@ namespace Netconfig
             public string baseURL;
             public string socketURL;
         }
+        [Serializable]
+        public class ApiName
+        {
+            public RequestType requestType;
+            public string api;
+        }
+        public List<ApiName> apiList;
+        private Dictionary<RequestType, string> apiDictionary = new Dictionary<RequestType, string>();
+        private static readonly Dictionary<RequestType, Type> responseMap = new Dictionary<RequestType, Type>
+        {
+          { RequestType.SignIn, typeof(ResponseBody) },
+        };
         // Singleton instance for easy access
         private static ServerConfig instance;
         public static ServerConfig Instance
@@ -49,15 +63,13 @@ namespace Netconfig
                 return serverEntries.Count > 0 ? serverEntries[index] : null;
             }
         }
-        [Serializable]
-        public class ApiName
+        public void BuildApis()
         {
-            public RequestType requestType;
-            public HttpRequestType httpRequestType;
-            public string api;
+            foreach (var item in apiList)
+            {
+                apiDictionary.Add(item.requestType, item.api);
+            }
         }
-        public List<ApiName> apiList;
-        private Dictionary<RequestType, ApiName> apiDictionary = new Dictionary<RequestType, ApiName>();
         // Add a new server configuration
         public void AddServerEntry(string name, string baseUrl, string socketUrl)
         {
@@ -65,13 +77,7 @@ namespace Netconfig
             serverEntries.Add(newEntry);
             selectedConfigIndex = serverEntries.Count - 1; // Select the newly added configuration
         }
-        public void BuildApis()
-        {
-            foreach (var item in apiList)
-            {
-                apiDictionary.Add(item.requestType, item);
-            }
-        }
+
         // Remove a server configuration
         public void RemoveServerEntry(int index)
         {
@@ -81,24 +87,26 @@ namespace Netconfig
                 selectedConfigIndex = Mathf.Clamp(selectedConfigIndex, 0, serverEntries.Count - 1); // Adjust the selected index
             }
         }
-        public (string, HttpRequestType) GetApiUrl(RequestType apiType)
+        public string GetApiUrl(RequestType apiType)
         {
             if (apiDictionary.Count == 0) BuildApis();
-            return ($"{CurrentServerURL.baseURL}/{apiDictionary[apiType].api}", apiDictionary[apiType].httpRequestType);
+            return $"{CurrentServerURL.baseURL}/{apiDictionary[apiType]}";
+        }
+
+        public Response MapResponse(string data, RequestType requestType)
+        {
+            if (!responseMap.TryGetValue(requestType, out Type type))
+                return new ResponseBody(405, "Request type not supported");
+
+            return (Response)JsonConvert.DeserializeObject(data, type);
+        }
+        public Response MapErrorResponse(long code, string message)
+        {
+            return new ResponseBody(code, message);
         }
     }
     public enum RequestType
     {
-        Login,
-        SilentLogin,
-        UpdateScore,
-        GetGlobalLeaderboard,
-        GetFriends,
-        UpdateScoreWeek,
-        GetWeekLeaderboard,
-        UpdateStar,
-        UpdateCoin,
-        Logout,
-        DeleteAccount
+        SignIn,
     }
 }

@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using UnityEditor;
 using UnityEngine;
 namespace Netconfig
@@ -7,7 +8,7 @@ namespace Netconfig
     {
         private SerializedProperty serverEntriesProperty;
         private SerializedProperty selectedConfigIndexProperty;
-
+        SerializedProperty apiListProperty;
         // Key strings for EditorPrefs
         private const string ConfigNameKey = "ServerConfigEditor_ConfigName";
         private const string BaseURLKey = "ServerConfigEditor_BaseURL";
@@ -23,12 +24,19 @@ namespace Netconfig
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
+
+            // Display existing configurations in a dropdown
             DrawServerConfigDropdown();
+
             EditorGUILayout.Space();
+
+            // Add new configuration
             DrawAddServerEntry();
+
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("API List", EditorStyles.boldLabel);
             EditorGUILayout.PropertyField(apiListProperty, new GUIContent("APIs"), true);
+
             serializedObject.ApplyModifiedProperties();
         }
 
@@ -91,9 +99,9 @@ namespace Netconfig
                 EditorPrefs.SetString(BaseURLKey, "");
                 EditorPrefs.SetString(SocketURLKey, "");
             }
-            if (GUILayout.Button("Remove Current Config",GUILayout.Width(150), GUILayout.Height(40)))
+            if (GUILayout.Button("Remove Current Config", GUILayout.Width(150), GUILayout.Height(40)))
             {
-                   Undo.RecordObject(target, "Remove Server Entry");
+                Undo.RecordObject(target, "Remove Server Entry");
 
                 (target as ServerConfig).RemoveServerEntry(selectedConfigIndexProperty.intValue);
 
@@ -110,3 +118,4 @@ namespace Netconfig
         }
     }
 }
+#endif
