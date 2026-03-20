@@ -4,33 +4,51 @@ namespace GF
 {
     public static class APIManager
     {
-        public static void GetAPI<T>(Request request, Action<T> Callback)
+        public static void GetAPI<T>(Request request, Action<T, Response> Callback)
         {
             Utils.CallEventAsync(new ApiEvent(HttpRequestType.GET, request, (res) =>
             {
-                Callback?.Invoke((T)res);
+                var result = MapResponse<T>(res);
+                Callback?.Invoke(result.Item1, result.Item2);
             }));
         }
-        public static void PostAPI<T>(Request request, Action<T> Callback)
+        public static void PostAPI<T>(Request request, Action<T, Response> Callback)
         {
             Utils.CallEventAsync(new ApiEvent(HttpRequestType.POST, request, (res) =>
             {
-                Callback?.Invoke((T)res);
+                var result = MapResponse<T>(res);
+                Callback?.Invoke(result.Item1, result.Item2);
+
             }));
         }
-        public static void PutAPI<T>(Request request, Action<T> Callback)
+        public static void PutAPI<T>(Request request, Action<T, Response> Callback)
         {
             Utils.CallEventAsync(new ApiEvent(HttpRequestType.PUT, request, (res) =>
             {
-                Callback?.Invoke((T)res);
+                var result = MapResponse<T>(res);
+                Callback?.Invoke(result.Item1, result.Item2);
             }));
         }
-        public static void DeleteAPI<T>(Request request, Action<T> Callback)
+        public static void DeleteAPI<T>(Request request, Action<T, Response> Callback)
         {
             Utils.CallEventAsync(new ApiEvent(HttpRequestType.DELETE, request, (res) =>
             {
-                Callback?.Invoke((T)res);
+                var result = MapResponse<T>(res);
+                Callback?.Invoke(result.Item1, result.Item2);
             }));
+        }
+
+        private static (T, Response) MapResponse<T>(string res)
+        {
+            try
+            {
+                T data = JsonConvert.DeserializeObject<T>(res);
+                return (data,(Response)data);
+            }
+            catch (Exception e)
+            {
+                return (default(T),JsonConvert.DeserializeObject<ResponseBody>(res));
+            }
         }
     }
 }

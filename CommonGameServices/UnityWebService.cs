@@ -9,7 +9,7 @@ namespace GF
 {
     public class UnityWebService : IService
     {
-        private bool isUpdateRequired = false;
+         private bool isUpdateRequired = false;
         private string BearerTokenKey = "BearerToken";
         public bool IsUpdateRequired => isUpdateRequired;
         public void Initialize()
@@ -69,12 +69,12 @@ namespace GF
         /// <param name="OnPostCompleteCalback"></param>
         /// <param name="OnProgressCallback"></param>
 
-        protected void HTTPPost(string url, RequestType requestType, string data, Action<Response> OnPostCompleteCalback)
+        protected void HTTPPost(string url, RequestType requestType, string data, Action<string> OnPostCompleteCalback)
         {
             Utils.CallEventAsync(new CoroutineEvent(PostRequest(url, requestType, data, OnPostCompleteCalback)));
         }
 
-        private IEnumerator PostRequest(string url, RequestType requestType, string data, Action<Response> onPostCompleteCalback)
+        private IEnumerator PostRequest(string url, RequestType requestType, string data, Action<string> onPostCompleteCalback)
         {
             Logger.Log(LogType.HttpRequest, $"[POST] : {requestType} : {data}");
             // Convert JSON string to bytes
@@ -102,7 +102,7 @@ namespace GF
                 if (request.result == UnityWebRequest.Result.Success)
                 {
                     Logger.Log(LogType.HttpResponse, $"[Response]-{requestType} : {request.downloadHandler.text}");
-                    onPostCompleteCalback?.Invoke(ServerConfig.Instance.MapResponse(request.downloadHandler.text,requestType));
+                    onPostCompleteCalback?.Invoke(request.downloadHandler.text);
                 }
                 else
                 {
@@ -120,19 +120,20 @@ namespace GF
         /// <param name="requestType"></param>
         /// <param name="OnGetCompleteCallback"></param>
         /// <param name="progressCallback"></param>
-        protected void HTTPGet(string url, RequestType requestType, Action<Response> OnGetCompleteCallback)
+        protected void HTTPGet(string url, RequestType requestType, Action<string> OnGetCompleteCallback)
         {
             Utils.CallEventAsync(new CoroutineEvent(GetRequest(url, requestType, OnGetCompleteCallback)));
         }
 
-        private IEnumerator GetRequest(string url, RequestType requestType, Action<Response> onGetCompleteCallback)
+        private IEnumerator GetRequest(string url, RequestType requestType, Action<string> onGetCompleteCallback)
         {
             Logger.Log(LogType.HttpRequest, $"[GET] : {requestType}");
             using (UnityWebRequest request = UnityWebRequest.Get(url))
             {
                 // Headers
                 request.SetRequestHeader("Content-Type", "application/json");
-                request.SetRequestHeader("Authorization", "Bearer " + PlayerPrefs.GetString("BearerToken"));
+                if (PlayerPrefs.HasKey("BearerToken") && !string.IsNullOrEmpty(PlayerPrefs.GetString("BearerToken")))
+                    request.SetRequestHeader("Authorization", "Bearer " + PlayerPrefs.GetString("BearerToken"));
 
                 // Send request
                 yield return request.SendWebRequest();
@@ -140,7 +141,7 @@ namespace GF
                 if (request.result == UnityWebRequest.Result.Success)
                 {
                     Logger.Log(LogType.HttpResponse, $"[Response]-{requestType} : {request.downloadHandler.text}");
-                    onGetCompleteCallback?.Invoke(ServerConfig.Instance.MapResponse(request.downloadHandler.text,requestType));
+                    onGetCompleteCallback?.Invoke(request.downloadHandler.text);
                 }
                 else
                 {
@@ -157,11 +158,11 @@ namespace GF
         /// <param name="requestType"></param>
         /// <param name="data"></param>
         /// <param name="OnPutCompleteCallback"></param>
-        protected void HTTPPut(string url, RequestType requestType, string data, Action<Response> OnPutCompleteCallback)
+        protected void HTTPPut(string url, RequestType requestType, string data, Action<string> OnPutCompleteCallback)
         {
             Utils.CallEventAsync(new CoroutineEvent(PutRequest(url, requestType, data, OnPutCompleteCallback)));
         }
-        private IEnumerator PutRequest(string url, RequestType requestType, string data, Action<Response> onPostCompleteCalback)
+        private IEnumerator PutRequest(string url, RequestType requestType, string data, Action<string> onPostCompleteCalback)
         {
             Logger.Log(LogType.HttpRequest, $"[POST] : {requestType} : {data}");
             // Convert JSON string to bytes
@@ -189,7 +190,7 @@ namespace GF
                 if (request.result == UnityWebRequest.Result.Success)
                 {
                     Logger.Log(LogType.HttpResponse, $"[Response]-{requestType} : {request.downloadHandler.text}");
-                    onPostCompleteCalback?.Invoke(ServerConfig.Instance.MapResponse(request.downloadHandler.text,requestType));
+                    onPostCompleteCalback?.Invoke(request.downloadHandler.text);
                 }
                 else
                 {
@@ -205,11 +206,11 @@ namespace GF
         /// <param name="requestType"></param>
         /// <param name="data"></param>
         /// <param name="OnPutCompleteCallback"></param>
-        protected void HTTPDelete(string url, RequestType requestType, string data, Action<Response> OnPutCompleteCallback)
+        protected void HTTPDelete(string url, RequestType requestType, string data, Action<string> OnPutCompleteCallback)
         {
             Utils.CallEventAsync(new CoroutineEvent(DeleteRequest(url, requestType, data, OnPutCompleteCallback)));
         }
-        private IEnumerator DeleteRequest(string url, RequestType requestType, string data, Action<Response> onPostCompleteCalback)
+        private IEnumerator DeleteRequest(string url, RequestType requestType, string data, Action<string> onPostCompleteCalback)
         {
             Logger.Log(LogType.HttpRequest, $"[POST] : {requestType} : {data}");
             // Convert JSON string to bytes
@@ -237,7 +238,7 @@ namespace GF
                 if (request.result == UnityWebRequest.Result.Success)
                 {
                     Logger.Log(LogType.HttpResponse, $"[Response]-{requestType} : {request.downloadHandler.text}");
-                    onPostCompleteCalback?.Invoke(ServerConfig.Instance.MapResponse(request.downloadHandler.text,requestType));
+                    onPostCompleteCalback?.Invoke(request.downloadHandler.text);
                 }
                 else
                 {

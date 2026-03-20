@@ -7,7 +7,8 @@ namespace GF
 {
     public interface Response
     {
-        long status { get; }
+        long code { get; }
+        bool status { get; }
         string message { get; }
     }
 }
